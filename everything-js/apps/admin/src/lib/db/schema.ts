@@ -214,6 +214,35 @@ export const invitation = sqliteTable("invitation", {
     .references(() => user.id),
 })
 
+// apiKey() plugin — static keys for non-interactive callers (other tools).
+// referenceId is the owning user's id (plugin default `references: "user"`).
+export const apikey = sqliteTable("apikey", {
+  id: text("id").primaryKey(),
+  configId: text("config_id").notNull().default("default"),
+  name: text("name"),
+  start: text("start"),
+  prefix: text("prefix"),
+  key: text("key").notNull(),
+  referenceId: text("reference_id").notNull(),
+  refillInterval: integer("refill_interval"),
+  refillAmount: integer("refill_amount"),
+  lastRefillAt: integer("last_refill_at", { mode: "timestamp" }),
+  enabled: integer("enabled", { mode: "boolean" }).default(true),
+  rateLimitEnabled: integer("rate_limit_enabled", { mode: "boolean" }).default(
+    true,
+  ),
+  rateLimitTimeWindow: integer("rate_limit_time_window").default(86400000),
+  rateLimitMax: integer("rate_limit_max").default(10),
+  requestCount: integer("request_count").default(0),
+  remaining: integer("remaining"),
+  lastRequest: integer("last_request", { mode: "timestamp" }),
+  expiresAt: integer("expires_at", { mode: "timestamp" }),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  permissions: text("permissions"),
+  metadata: text("metadata"),
+})
+
 // deviceAuthorization() plugin — RFC 8628 device code flow (CLI login)
 export const deviceCode = sqliteTable("device_code", {
   id: text("id").primaryKey(),

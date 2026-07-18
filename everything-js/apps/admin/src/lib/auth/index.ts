@@ -1,6 +1,7 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { bearer, deviceAuthorization, jwt, organization } from "better-auth/plugins"
+import { apiKey } from "@better-auth/api-key"
 import { oauthProvider } from "@better-auth/oauth-provider"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import * as schema from "../db/schema"
@@ -63,6 +64,14 @@ export function createAuth(env: Env) {
           const alreadyOwnsOrg = await isOrgOwnerAnywhere(db, user.id)
           return !alreadyOwnsOrg
         },
+      }),
+      // Static keys for non-interactive callers (CI, scripts, other
+      // tools). Keys are user-owned; verification happens server-side
+      // via auth.api.verifyApiKey — a key is NOT a session
+      // (enableSessionForAPIKeys stays off per better-auth's guidance).
+      apiKey({
+        defaultPrefix: "oc_",
+        requireName: true,
       }),
       // Lets the CLI (packages/cli) sign in via RFC 8628 device code flow,
       // then use the resulting session token as `Authorization: Bearer`.
