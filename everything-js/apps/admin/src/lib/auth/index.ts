@@ -1,6 +1,12 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { bearer, deviceAuthorization, jwt, organization } from "better-auth/plugins"
+import {
+  bearer,
+  deviceAuthorization,
+  jwt,
+  organization,
+  twoFactor,
+} from "better-auth/plugins"
 import { apiKey } from "@better-auth/api-key"
 import { oauthProvider } from "@better-auth/oauth-provider"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
@@ -64,6 +70,11 @@ export function createAuth(env: Env) {
           const alreadyOwnsOrg = await isOrgOwnerAnywhere(db, user.id)
           return !alreadyOwnsOrg
         },
+      }),
+      // Opt-in TOTP two-factor auth with backup codes. "Open Context"
+      // is what shows up next to the code in authenticator apps.
+      twoFactor({
+        issuer: "Open Context",
       }),
       // Static keys for non-interactive callers (CI, scripts, other
       // tools). Keys are user-owned; verification happens server-side

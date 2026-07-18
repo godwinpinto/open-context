@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TwoFactorRouteImport } from './routes/two-factor'
 import { Route as DeviceRouteImport } from './routes/device'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConsentRouteImport } from './routes/consent'
@@ -28,9 +29,15 @@ import { Route as OOrgIdTTeamIdManageTeamsRouteImport } from './routes/o/$orgId/
 import { Route as OOrgIdTTeamIdManageRolesRouteImport } from './routes/o/$orgId/t/$teamId/manage/roles'
 import { Route as OOrgIdTTeamIdManageMembersRouteImport } from './routes/o/$orgId/t/$teamId/manage/members'
 import { Route as OOrgIdTTeamIdAccountSessionsRouteImport } from './routes/o/$orgId/t/$teamId/account/sessions'
+import { Route as OOrgIdTTeamIdAccountSecurityRouteImport } from './routes/o/$orgId/t/$teamId/account/security'
 import { Route as OOrgIdTTeamIdAccountProfileRouteImport } from './routes/o/$orgId/t/$teamId/account/profile'
 import { Route as OOrgIdTTeamIdAccountConnectedAppsRouteImport } from './routes/o/$orgId/t/$teamId/account/connected-apps'
 
+const TwoFactorRoute = TwoFactorRouteImport.update({
+  id: '/two-factor',
+  path: '/two-factor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeviceRoute = DeviceRouteImport.update({
   id: '/device',
   path: '/device',
@@ -137,6 +144,12 @@ const OOrgIdTTeamIdAccountSessionsRoute =
     path: '/sessions',
     getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
   } as any)
+const OOrgIdTTeamIdAccountSecurityRoute =
+  OOrgIdTTeamIdAccountSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
+  } as any)
 const OOrgIdTTeamIdAccountProfileRoute =
   OOrgIdTTeamIdAccountProfileRouteImport.update({
     id: '/profile',
@@ -155,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
   '/device': typeof DeviceRoute
+  '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -166,6 +180,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
   '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -178,6 +193,7 @@ export interface FileRoutesByTo {
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
   '/device': typeof DeviceRoute
+  '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -186,6 +202,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdIndexRoute
   '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -199,6 +216,7 @@ export interface FileRoutesById {
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
   '/device': typeof DeviceRoute
+  '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -210,6 +228,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
   '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -224,6 +243,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/dashboard'
     | '/device'
+    | '/two-factor'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -235,6 +255,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/'
     | '/o/$orgId/t/$teamId/account/connected-apps'
     | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -247,6 +268,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/dashboard'
     | '/device'
+    | '/two-factor'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -255,6 +277,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId'
     | '/o/$orgId/t/$teamId/account/connected-apps'
     | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -267,6 +290,7 @@ export interface FileRouteTypes {
     | '/consent'
     | '/dashboard'
     | '/device'
+    | '/two-factor'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -278,6 +302,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/'
     | '/o/$orgId/t/$teamId/account/connected-apps'
     | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -291,6 +316,7 @@ export interface RootRouteChildren {
   ConsentRoute: typeof ConsentRoute
   DashboardRoute: typeof DashboardRoute
   DeviceRoute: typeof DeviceRoute
+  TwoFactorRoute: typeof TwoFactorRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOpenidConfigurationRoute: typeof DotwellKnownOpenidConfigurationRoute
   OnboardingOrganizationRoute: typeof OnboardingOrganizationRoute
@@ -300,6 +326,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/two-factor': {
+      id: '/two-factor'
+      path: '/two-factor'
+      fullPath: '/two-factor'
+      preLoaderRoute: typeof TwoFactorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/device': {
       id: '/device'
       path: '/device'
@@ -433,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdAccountSessionsRouteImport
       parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
     }
+    '/o/$orgId/t/$teamId/account/security': {
+      id: '/o/$orgId/t/$teamId/account/security'
+      path: '/security'
+      fullPath: '/o/$orgId/t/$teamId/account/security'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountSecurityRouteImport
+      parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
+    }
     '/o/$orgId/t/$teamId/account/profile': {
       id: '/o/$orgId/t/$teamId/account/profile'
       path: '/profile'
@@ -468,6 +508,7 @@ const DotwellKnownOauthAuthorizationServerRouteWithChildren =
 interface OOrgIdTTeamIdAccountRouteRouteChildren {
   OOrgIdTTeamIdAccountConnectedAppsRoute: typeof OOrgIdTTeamIdAccountConnectedAppsRoute
   OOrgIdTTeamIdAccountProfileRoute: typeof OOrgIdTTeamIdAccountProfileRoute
+  OOrgIdTTeamIdAccountSecurityRoute: typeof OOrgIdTTeamIdAccountSecurityRoute
   OOrgIdTTeamIdAccountSessionsRoute: typeof OOrgIdTTeamIdAccountSessionsRoute
   OOrgIdTTeamIdAccountIndexRoute: typeof OOrgIdTTeamIdAccountIndexRoute
 }
@@ -477,6 +518,7 @@ const OOrgIdTTeamIdAccountRouteRouteChildren: OOrgIdTTeamIdAccountRouteRouteChil
     OOrgIdTTeamIdAccountConnectedAppsRoute:
       OOrgIdTTeamIdAccountConnectedAppsRoute,
     OOrgIdTTeamIdAccountProfileRoute: OOrgIdTTeamIdAccountProfileRoute,
+    OOrgIdTTeamIdAccountSecurityRoute: OOrgIdTTeamIdAccountSecurityRoute,
     OOrgIdTTeamIdAccountSessionsRoute: OOrgIdTTeamIdAccountSessionsRoute,
     OOrgIdTTeamIdAccountIndexRoute: OOrgIdTTeamIdAccountIndexRoute,
   }
@@ -526,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConsentRoute: ConsentRoute,
   DashboardRoute: DashboardRoute,
   DeviceRoute: DeviceRoute,
+  TwoFactorRoute: TwoFactorRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOpenidConfigurationRoute: DotwellKnownOpenidConfigurationRoute,

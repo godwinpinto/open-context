@@ -39,7 +39,7 @@ export function LoginForm({
     setError(null)
     setLoading(true)
 
-    const { error } =
+    const { data, error } =
       mode === "sign-in"
         ? await authClient.signIn.email({ email, password })
         : await authClient.signUp.email({ email, password, name })
@@ -48,6 +48,13 @@ export function LoginForm({
 
     if (error) {
       setError(error.message ?? "Something went wrong. Please try again.")
+      return
+    }
+
+    // 2FA accounts don't have a session yet — the twoFactorClient's
+    // onTwoFactorRedirect callback is already sending them to
+    // /two-factor, so don't race it to /dashboard.
+    if (data && "twoFactorRedirect" in data && data.twoFactorRedirect) {
       return
     }
 

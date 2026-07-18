@@ -8,6 +8,7 @@ const TABS = [
   { value: "profile", label: "Profile" },
   { value: "connected-apps", label: "Connected apps" },
   { value: "sessions", label: "Sessions" },
+  { value: "security", label: "Security" },
 ] as const
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId/account")({
