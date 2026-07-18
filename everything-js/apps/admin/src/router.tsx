@@ -13,6 +13,10 @@ export function getRouter() {
     scrollRestoration: true,
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    // Same-document navigations animate via the View Transitions API;
+    // the cross-document (admin ↔ trail) counterpart lives in the
+    // shared theme.css.
+    defaultViewTransition: true,
   })
 
   setupRouterSsrQueryIntegration({ router, queryClient })

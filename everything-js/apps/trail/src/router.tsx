@@ -8,6 +8,10 @@ export function getRouter() {
     basepath: "/trail",
     scrollRestoration: true,
     defaultPreload: "intent",
+    // Same-document navigations animate via the View Transitions API;
+    // the cross-document (admin ↔ trail) counterpart lives in the
+    // shared theme.css.
+    defaultViewTransition: true,
   })
 }
 

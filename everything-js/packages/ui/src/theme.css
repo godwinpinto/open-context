@@ -129,3 +129,28 @@
     @apply font-sans;
     }
 }
+/* View transitions.
+   Same-document navs are triggered by the routers
+   (defaultViewTransition); this rule extends the effect to
+   cross-document navigations too, so hopping between modules
+   (admin ↔ trail — separate workers, full document loads) cross-fades
+   instead of flashing white. Both sidebars share one
+   view-transition-name, so the browser pairs them across pages and the
+   shell appears to hold still while only the content area transitions.
+   Unsupported browsers (older Firefox/Safari) simply skip the
+   animation. */
+@view-transition {
+  navigation: auto;
+}
+
+[data-slot="sidebar"] {
+  view-transition-name: app-sidebar;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
