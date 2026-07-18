@@ -7,7 +7,7 @@ import { deviceAuthorizationClient } from "better-auth/client/plugins"
 // oauth_client.
 export const CLI_CLIENT_ID = "open-context-cli"
 
-const DEFAULT_BASE_URL = "https://open-context-admin.holy-forest-fd12.workers.dev"
+const DEFAULT_BASE_URL = "https://openctx.encatch.dev"
 
 export function resolveBaseURL(override?: string) {
   return override ?? process.env.OPEN_CONTEXT_API_URL ?? DEFAULT_BASE_URL

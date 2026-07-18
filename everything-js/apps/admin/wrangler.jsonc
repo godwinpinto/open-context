@@ -7,8 +7,18 @@
   "observability": {
     "enabled": true
   },
+  // Admin owns the whole hostname via a Custom Domain (auto DNS + cert).
+  // Future module workers claim path prefixes with routes like
+  // "openctx.encatch.dev/xyz*" — routes beat custom domains when both
+  // match, so admin stays the catch-all.
+  "routes": [
+    {
+      "pattern": "openctx.encatch.dev",
+      "custom_domain": true
+    }
+  ],
   "vars": {
-    "BETTER_AUTH_URL": "https://open-context-admin.holy-forest-fd12.workers.dev"
+    "BETTER_AUTH_URL": "https://openctx.encatch.dev"
   },
   "d1_databases": [
     {
