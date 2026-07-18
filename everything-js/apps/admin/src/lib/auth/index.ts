@@ -69,8 +69,11 @@ export function createAuth(env: Env) {
       // tools). Keys are user-owned; verification happens server-side
       // via auth.api.verifyApiKey — a key is NOT a session
       // (enableSessionForAPIKeys stays off per better-auth's guidance).
+      // The oc_sk_ prefix is deliberately distinctive so secret scanners
+      // (gitleaks, TruffleHog, GitHub secret scanning) can match leaked
+      // keys with a high-confidence pattern: oc_sk_[A-Za-z0-9]{64}
       apiKey({
-        defaultPrefix: "oc_",
+        defaultPrefix: "oc_sk_",
         requireName: true,
       }),
       // Lets the CLI (packages/cli) sign in via RFC 8628 device code flow,
