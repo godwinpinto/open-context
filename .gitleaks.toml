@@ -1,0 +1,11 @@
+title = "Open Context gitleaks config"
+
+# Keep all of gitleaks' built-in rules and add ours on top.
+[extend]
+useDefault = true
+
+[[rules]]
+id = "open-context-api-key"
+description = "Open Context API key"
+regex = '''oc_sk_[A-Za-z0-9]{64}'''
+keywords = ["oc_sk_"]
