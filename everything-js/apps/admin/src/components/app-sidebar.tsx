@@ -1,4 +1,10 @@
-import { ChevronsUpDown, LayoutDashboard, LogOut, Plus } from "lucide-react"
+import {
+  ChevronsUpDown,
+  LayoutDashboard,
+  LogOut,
+  Plus,
+  Settings,
+} from "lucide-react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 
@@ -35,8 +41,19 @@ type OrgSummary = { id: string; name: string }
 type TeamSummary = { id: string; name: string }
 
 const navItems = [
-  { title: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
-]
+  {
+    title: "Dashboard",
+    to: "/o/$orgId/t/$teamId",
+    icon: LayoutDashboard,
+    exact: true,
+  },
+  {
+    title: "Manage",
+    to: "/o/$orgId/t/$teamId/manage",
+    icon: Settings,
+    exact: false,
+  },
+] as const
 
 function initials(name: string) {
   return (
@@ -178,7 +195,13 @@ export function AppSidebar({
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    render={<Link to={item.to} />}
+                    render={
+                      <Link
+                        to={item.to}
+                        params={{ orgId: organization.id, teamId: team.id }}
+                        activeOptions={{ exact: item.exact }}
+                      />
+                    }
                     tooltip={item.title}
                   >
                     <item.icon />

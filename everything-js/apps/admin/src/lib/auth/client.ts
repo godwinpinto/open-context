@@ -8,6 +8,9 @@ export const authClient = createAuthClient({
       teams: {
         enabled: true,
       },
+      dynamicAccessControl: {
+        enabled: true,
+      },
     }),
     oauthProviderClient(),
   ],

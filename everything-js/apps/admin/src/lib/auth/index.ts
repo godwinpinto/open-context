@@ -5,6 +5,7 @@ import { jwt, organization } from "better-auth/plugins"
 import { oauthProvider } from "@better-auth/oauth-provider"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import * as schema from "../db/schema"
+import { accessControl } from "./access-control"
 
 // Plugins are declared inline (rather than shared via a helper function)
 // so TypeScript infers `plugins` as a tuple, not a widened union array —
@@ -41,6 +42,10 @@ export function createAuth(env: Env) {
       }),
       organization({
         teams: {
+          enabled: true,
+        },
+        ac: accessControl,
+        dynamicAccessControl: {
           enabled: true,
         },
       }),

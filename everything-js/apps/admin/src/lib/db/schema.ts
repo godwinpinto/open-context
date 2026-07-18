@@ -213,3 +213,17 @@ export const invitation = sqliteTable("invitation", {
     .notNull()
     .references(() => user.id),
 })
+
+// dynamicAccessControl — custom, per-organization roles with their own
+// resource/action permission sets, in addition to the built-in
+// owner/admin/member roles.
+export const organizationRole = sqliteTable("organization_role", {
+  id: text("id").primaryKey(),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id),
+  role: text("role").notNull(),
+  permission: text("permission").notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+})
