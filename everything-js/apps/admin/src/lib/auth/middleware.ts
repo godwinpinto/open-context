@@ -1,7 +1,13 @@
 import { createMiddleware } from "@tanstack/react-start"
 import { getRequestHeaders } from "@tanstack/react-start/server"
 import { env } from "cloudflare:workers"
+import { drizzle } from "drizzle-orm/d1"
 import { createAuth } from "@/lib/auth"
+import * as schema from "@/lib/db/schema"
+
+export function getDb(env: Env) {
+  return drizzle(env.DB, { schema })
+}
 
 // Loads the current session (possibly null) into context. A route's
 // beforeLoad redirect only protects the page's UI, not a server function's
@@ -12,7 +18,11 @@ export const sessionMiddleware = createMiddleware({ type: "function" }).server(
     const headers = new Headers(getRequestHeaders() as HeadersInit)
     const auth = createAuth(env)
     const session = await auth.api.getSession({ headers })
-    return next({ context: { auth, headers, session } })
+    // For server functions that need a direct table query (e.g. checking
+    // ownership across all orgs) rather than going through a better-auth
+    // API call.
+    const db = getDb(env)
+    return next({ context: { auth, headers, session, db } })
   },
 )
 

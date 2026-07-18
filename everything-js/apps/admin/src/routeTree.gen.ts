@@ -20,10 +20,15 @@ import { Route as DotwellKnownOauthAuthorizationServerApiAuthRouteImport } from 
 import { Route as OOrgIdTTeamIdRouteRouteImport } from './routes/o/$orgId/t/$teamId/route'
 import { Route as OOrgIdTTeamIdIndexRouteImport } from './routes/o/$orgId/t/$teamId/index'
 import { Route as OOrgIdTTeamIdManageRouteRouteImport } from './routes/o/$orgId/t/$teamId/manage/route'
+import { Route as OOrgIdTTeamIdAccountRouteRouteImport } from './routes/o/$orgId/t/$teamId/account/route'
 import { Route as OOrgIdTTeamIdManageIndexRouteImport } from './routes/o/$orgId/t/$teamId/manage/index'
+import { Route as OOrgIdTTeamIdAccountIndexRouteImport } from './routes/o/$orgId/t/$teamId/account/index'
 import { Route as OOrgIdTTeamIdManageTeamsRouteImport } from './routes/o/$orgId/t/$teamId/manage/teams'
 import { Route as OOrgIdTTeamIdManageRolesRouteImport } from './routes/o/$orgId/t/$teamId/manage/roles'
 import { Route as OOrgIdTTeamIdManageMembersRouteImport } from './routes/o/$orgId/t/$teamId/manage/members'
+import { Route as OOrgIdTTeamIdAccountSessionsRouteImport } from './routes/o/$orgId/t/$teamId/account/sessions'
+import { Route as OOrgIdTTeamIdAccountProfileRouteImport } from './routes/o/$orgId/t/$teamId/account/profile'
+import { Route as OOrgIdTTeamIdAccountConnectedAppsRouteImport } from './routes/o/$orgId/t/$teamId/account/connected-apps'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -84,11 +89,23 @@ const OOrgIdTTeamIdManageRouteRoute =
     path: '/manage',
     getParentRoute: () => OOrgIdTTeamIdRouteRoute,
   } as any)
+const OOrgIdTTeamIdAccountRouteRoute =
+  OOrgIdTTeamIdAccountRouteRouteImport.update({
+    id: '/account',
+    path: '/account',
+    getParentRoute: () => OOrgIdTTeamIdRouteRoute,
+  } as any)
 const OOrgIdTTeamIdManageIndexRoute =
   OOrgIdTTeamIdManageIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => OOrgIdTTeamIdManageRouteRoute,
+  } as any)
+const OOrgIdTTeamIdAccountIndexRoute =
+  OOrgIdTTeamIdAccountIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
   } as any)
 const OOrgIdTTeamIdManageTeamsRoute =
   OOrgIdTTeamIdManageTeamsRouteImport.update({
@@ -108,6 +125,24 @@ const OOrgIdTTeamIdManageMembersRoute =
     path: '/members',
     getParentRoute: () => OOrgIdTTeamIdManageRouteRoute,
   } as any)
+const OOrgIdTTeamIdAccountSessionsRoute =
+  OOrgIdTTeamIdAccountSessionsRouteImport.update({
+    id: '/sessions',
+    path: '/sessions',
+    getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
+  } as any)
+const OOrgIdTTeamIdAccountProfileRoute =
+  OOrgIdTTeamIdAccountProfileRouteImport.update({
+    id: '/profile',
+    path: '/profile',
+    getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
+  } as any)
+const OOrgIdTTeamIdAccountConnectedAppsRoute =
+  OOrgIdTTeamIdAccountConnectedAppsRouteImport.update({
+    id: '/connected-apps',
+    path: '/connected-apps',
+    getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -119,11 +154,16 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
+  '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
+  '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
+  '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
+  '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
 }
 export interface FileRoutesByTo {
@@ -136,9 +176,13 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdIndexRoute
+  '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
+  '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
+  '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageIndexRoute
 }
 export interface FileRoutesById {
@@ -152,11 +196,16 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
+  '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
+  '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
+  '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
+  '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
+  '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
 }
 export interface FileRouteTypes {
@@ -171,11 +220,16 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
+    | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/'
+    | '/o/$orgId/t/$teamId/account/connected-apps'
+    | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
+    | '/o/$orgId/t/$teamId/account/'
     | '/o/$orgId/t/$teamId/manage/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -188,9 +242,13 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/o/$orgId/t/$teamId'
+    | '/o/$orgId/t/$teamId/account/connected-apps'
+    | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
+    | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/manage'
   id:
     | '__root__'
@@ -203,11 +261,16 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
+    | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/'
+    | '/o/$orgId/t/$teamId/account/connected-apps'
+    | '/o/$orgId/t/$teamId/account/profile'
+    | '/o/$orgId/t/$teamId/account/sessions'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
+    | '/o/$orgId/t/$teamId/account/'
     | '/o/$orgId/t/$teamId/manage/'
   fileRoutesById: FileRoutesById
 }
@@ -301,12 +364,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdManageRouteRouteImport
       parentRoute: typeof OOrgIdTTeamIdRouteRoute
     }
+    '/o/$orgId/t/$teamId/account': {
+      id: '/o/$orgId/t/$teamId/account'
+      path: '/account'
+      fullPath: '/o/$orgId/t/$teamId/account'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountRouteRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
     '/o/$orgId/t/$teamId/manage/': {
       id: '/o/$orgId/t/$teamId/manage/'
       path: '/'
       fullPath: '/o/$orgId/t/$teamId/manage/'
       preLoaderRoute: typeof OOrgIdTTeamIdManageIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdManageRouteRoute
+    }
+    '/o/$orgId/t/$teamId/account/': {
+      id: '/o/$orgId/t/$teamId/account/'
+      path: '/'
+      fullPath: '/o/$orgId/t/$teamId/account/'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
     }
     '/o/$orgId/t/$teamId/manage/teams': {
       id: '/o/$orgId/t/$teamId/manage/teams'
@@ -329,6 +406,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdManageMembersRouteImport
       parentRoute: typeof OOrgIdTTeamIdManageRouteRoute
     }
+    '/o/$orgId/t/$teamId/account/sessions': {
+      id: '/o/$orgId/t/$teamId/account/sessions'
+      path: '/sessions'
+      fullPath: '/o/$orgId/t/$teamId/account/sessions'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountSessionsRouteImport
+      parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
+    }
+    '/o/$orgId/t/$teamId/account/profile': {
+      id: '/o/$orgId/t/$teamId/account/profile'
+      path: '/profile'
+      fullPath: '/o/$orgId/t/$teamId/account/profile'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountProfileRouteImport
+      parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
+    }
+    '/o/$orgId/t/$teamId/account/connected-apps': {
+      id: '/o/$orgId/t/$teamId/account/connected-apps'
+      path: '/connected-apps'
+      fullPath: '/o/$orgId/t/$teamId/account/connected-apps'
+      preLoaderRoute: typeof OOrgIdTTeamIdAccountConnectedAppsRouteImport
+      parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
+    }
   }
 }
 
@@ -345,6 +443,27 @@ const DotwellKnownOauthAuthorizationServerRouteChildren: DotwellKnownOauthAuthor
 const DotwellKnownOauthAuthorizationServerRouteWithChildren =
   DotwellKnownOauthAuthorizationServerRoute._addFileChildren(
     DotwellKnownOauthAuthorizationServerRouteChildren,
+  )
+
+interface OOrgIdTTeamIdAccountRouteRouteChildren {
+  OOrgIdTTeamIdAccountConnectedAppsRoute: typeof OOrgIdTTeamIdAccountConnectedAppsRoute
+  OOrgIdTTeamIdAccountProfileRoute: typeof OOrgIdTTeamIdAccountProfileRoute
+  OOrgIdTTeamIdAccountSessionsRoute: typeof OOrgIdTTeamIdAccountSessionsRoute
+  OOrgIdTTeamIdAccountIndexRoute: typeof OOrgIdTTeamIdAccountIndexRoute
+}
+
+const OOrgIdTTeamIdAccountRouteRouteChildren: OOrgIdTTeamIdAccountRouteRouteChildren =
+  {
+    OOrgIdTTeamIdAccountConnectedAppsRoute:
+      OOrgIdTTeamIdAccountConnectedAppsRoute,
+    OOrgIdTTeamIdAccountProfileRoute: OOrgIdTTeamIdAccountProfileRoute,
+    OOrgIdTTeamIdAccountSessionsRoute: OOrgIdTTeamIdAccountSessionsRoute,
+    OOrgIdTTeamIdAccountIndexRoute: OOrgIdTTeamIdAccountIndexRoute,
+  }
+
+const OOrgIdTTeamIdAccountRouteRouteWithChildren =
+  OOrgIdTTeamIdAccountRouteRoute._addFileChildren(
+    OOrgIdTTeamIdAccountRouteRouteChildren,
   )
 
 interface OOrgIdTTeamIdManageRouteRouteChildren {
@@ -368,11 +487,13 @@ const OOrgIdTTeamIdManageRouteRouteWithChildren =
   )
 
 interface OOrgIdTTeamIdRouteRouteChildren {
+  OOrgIdTTeamIdAccountRouteRoute: typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   OOrgIdTTeamIdManageRouteRoute: typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   OOrgIdTTeamIdIndexRoute: typeof OOrgIdTTeamIdIndexRoute
 }
 
 const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
+  OOrgIdTTeamIdAccountRouteRoute: OOrgIdTTeamIdAccountRouteRouteWithChildren,
   OOrgIdTTeamIdManageRouteRoute: OOrgIdTTeamIdManageRouteRouteWithChildren,
   OOrgIdTTeamIdIndexRoute: OOrgIdTTeamIdIndexRoute,
 }

@@ -13,6 +13,7 @@ import {
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { authClient } from "@/lib/auth/client"
+import { getCanCreateOrganization } from "@/lib/auth/organization"
 import { getServerSession } from "@/lib/auth/session"
 
 export const Route = createFileRoute("/onboarding/organization")({
@@ -20,6 +21,13 @@ export const Route = createFileRoute("/onboarding/organization")({
     const session = await getServerSession()
     if (!session) {
       throw redirect({ to: "/" })
+    }
+    // Ownership is capped at one org per user (enforced server-side in
+    // lib/auth/index.ts) — no reason to show the form if they'd just get
+    // rejected on submit.
+    const canCreate = await getCanCreateOrganization()
+    if (!canCreate) {
+      throw redirect({ to: "/dashboard" })
     }
   },
   component: CreateOrganizationPage,

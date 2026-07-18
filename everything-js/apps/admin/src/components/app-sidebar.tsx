@@ -1,14 +1,18 @@
+import { useState } from "react"
 import {
   ChevronsUpDown,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Plus,
   Settings,
+  UserCog,
 } from "lucide-react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { ChangePasswordDialog } from "@/components/change-password-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +35,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { authClient } from "@/lib/auth/client"
+import { getCanCreateOrganization } from "@/lib/auth/organization"
 import type { getServerSession } from "@/lib/auth/session"
 
 type SessionUser = NonNullable<
@@ -76,6 +81,7 @@ export function AppSidebar({
   team: TeamSummary
 }) {
   const navigate = useNavigate()
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
 
   const { data: organizations } = useQuery({
     queryKey: ["organizations"],
@@ -95,6 +101,14 @@ export function AppSidebar({
       if (error) throw error
       return data
     },
+  })
+
+  // Ownership is capped at one org per user — see
+  // allowUserToCreateOrganization in lib/auth/index.ts for the actual
+  // enforcement. This is just so the menu item isn't a dead end.
+  const { data: canCreateOrganization } = useQuery({
+    queryKey: ["can-create-organization"],
+    queryFn: () => getCanCreateOrganization(),
   })
 
   async function onSignOut() {
@@ -173,15 +187,19 @@ export function AppSidebar({
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() =>
-                    navigate({ to: "/onboarding/organization" })
-                  }
-                >
-                  <Plus />
-                  New organization
-                </DropdownMenuItem>
+                {canCreateOrganization !== false && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() =>
+                        navigate({ to: "/onboarding/organization" })
+                      }
+                    >
+                      <Plus />
+                      New organization
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>
@@ -241,6 +259,22 @@ export function AppSidebar({
                 className="w-(--anchor-width) min-w-56"
                 align="end"
               >
+                <DropdownMenuItem
+                  onClick={() =>
+                    navigate({
+                      to: "/o/$orgId/t/$teamId/account/profile",
+                      params: { orgId: organization.id, teamId: team.id },
+                    })
+                  }
+                >
+                  <UserCog />
+                  Account settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setChangePasswordOpen(true)}>
+                  <KeyRound />
+                  Change password
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onSignOut}>
                   <LogOut />
                   Sign out
@@ -250,6 +284,10 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <ChangePasswordDialog
+        open={changePasswordOpen}
+        onOpenChange={setChangePasswordOpen}
+      />
     </Sidebar>
   )
 }

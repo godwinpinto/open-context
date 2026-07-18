@@ -1,10 +1,18 @@
 import { createServerFn } from "@tanstack/react-start"
 import { authMiddleware } from "@/lib/auth/middleware"
+import { isOrgOwnerAnywhere } from "@/lib/auth/org-limits"
 
 export const listUserOrganizations = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     return context.auth.api.listOrganizations({ headers: context.headers })
+  })
+
+export const getCanCreateOrganization = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const owns = await isOrgOwnerAnywhere(context.db, context.session.user.id)
+    return !owns
   })
 
 // Resolves and authorizes an org+team pair for the current user, syncing
