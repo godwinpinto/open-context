@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DeviceRouteImport } from './routes/device'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ConsentRouteImport } from './routes/consent'
 import { Route as IndexRouteImport } from './routes/index'
@@ -30,6 +31,11 @@ import { Route as OOrgIdTTeamIdAccountSessionsRouteImport } from './routes/o/$or
 import { Route as OOrgIdTTeamIdAccountProfileRouteImport } from './routes/o/$orgId/t/$teamId/account/profile'
 import { Route as OOrgIdTTeamIdAccountConnectedAppsRouteImport } from './routes/o/$orgId/t/$teamId/account/connected-apps'
 
+const DeviceRoute = DeviceRouteImport.update({
+  id: '/device',
+  path: '/device',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -148,6 +154,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
+  '/device': typeof DeviceRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -170,6 +177,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
+  '/device': typeof DeviceRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -190,6 +198,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/consent': typeof ConsentRoute
   '/dashboard': typeof DashboardRoute
+  '/device': typeof DeviceRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/'
     | '/consent'
     | '/dashboard'
+    | '/device'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
     | '/'
     | '/consent'
     | '/dashboard'
+    | '/device'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -255,6 +266,7 @@ export interface FileRouteTypes {
     | '/'
     | '/consent'
     | '/dashboard'
+    | '/device'
     | '/.well-known/oauth-authorization-server'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
@@ -278,6 +290,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConsentRoute: typeof ConsentRoute
   DashboardRoute: typeof DashboardRoute
+  DeviceRoute: typeof DeviceRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
   DotwellKnownOpenidConfigurationRoute: typeof DotwellKnownOpenidConfigurationRoute
   OnboardingOrganizationRoute: typeof OnboardingOrganizationRoute
@@ -287,6 +300,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/device': {
+      id: '/device'
+      path: '/device'
+      fullPath: '/device'
+      preLoaderRoute: typeof DeviceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -505,6 +525,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConsentRoute: ConsentRoute,
   DashboardRoute: DashboardRoute,
+  DeviceRoute: DeviceRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
   DotwellKnownOpenidConfigurationRoute: DotwellKnownOpenidConfigurationRoute,

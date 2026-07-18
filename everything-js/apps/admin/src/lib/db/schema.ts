@@ -214,6 +214,20 @@ export const invitation = sqliteTable("invitation", {
     .references(() => user.id),
 })
 
+// deviceAuthorization() plugin — RFC 8628 device code flow (CLI login)
+export const deviceCode = sqliteTable("device_code", {
+  id: text("id").primaryKey(),
+  deviceCode: text("device_code").notNull(),
+  userCode: text("user_code").notNull(),
+  userId: text("user_id").references(() => user.id),
+  expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
+  status: text("status").notNull(),
+  lastPolledAt: integer("last_polled_at", { mode: "timestamp" }),
+  pollingInterval: integer("polling_interval"),
+  clientId: text("client_id"),
+  scope: text("scope"),
+})
+
 // dynamicAccessControl — custom, per-organization roles with their own
 // resource/action permission sets, in addition to the built-in
 // owner/admin/member roles.

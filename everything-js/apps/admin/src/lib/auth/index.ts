@@ -1,12 +1,17 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
-import { jwt, organization } from "better-auth/plugins"
+import { bearer, deviceAuthorization, jwt, organization } from "better-auth/plugins"
 import { oauthProvider } from "@better-auth/oauth-provider"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 import * as schema from "../db/schema"
 import { accessControl } from "./access-control"
 import { getDb } from "./middleware"
 import { isOrgOwnerAnywhere } from "./org-limits"
+
+// Must match the client_id the CLI sends (packages/cli/src/auth.ts).
+// There's only one CLI client, so it's a fixed public identifier rather
+// than a row in oauth_client.
+export const CLI_CLIENT_ID = "open-context-cli"
 
 // Plugins are declared inline (rather than shared via a helper function)
 // so TypeScript infers `plugins` as a tuple, not a widened union array —
@@ -59,6 +64,13 @@ export function createAuth(env: Env) {
           return !alreadyOwnsOrg
         },
       }),
+      // Lets the CLI (packages/cli) sign in via RFC 8628 device code flow,
+      // then use the resulting session token as `Authorization: Bearer`.
+      deviceAuthorization({
+        verificationUri: "/device",
+        validateClient: (clientId) => clientId === CLI_CLIENT_ID,
+      }),
+      bearer(),
       tanstackStartCookies(), // must be last
     ],
   })
