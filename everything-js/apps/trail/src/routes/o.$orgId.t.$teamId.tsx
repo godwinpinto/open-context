@@ -1,65 +1,33 @@
-import { useEffect, useState } from "react"
-import { createFileRoute } from "@tanstack/react-router"
+import { Outlet, createFileRoute } from "@tanstack/react-router"
+
+import { Separator } from "@open-context/ui/components/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@open-context/ui/components/sidebar"
+import { TrailSidebar } from "@/components/trail-sidebar"
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId")({
-  component: TeamTrail,
+  component: TeamTrailLayout,
 })
 
-type SessionUser = { name: string; email: string }
-
-// Same-origin call to admin's better-auth endpoint — the session
-// cookie is scoped to the shared hostname, so it just flows.
-function useSharedSession() {
-  const [user, setUser] = useState<SessionUser | null | undefined>(undefined)
-  useEffect(() => {
-    fetch("/api/auth/get-session")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((session) => setUser(session?.user ?? null))
-      .catch(() => setUser(null))
-  }, [])
-  return user
-}
-
-function TeamTrail() {
+function TeamTrailLayout() {
   const { orgId, teamId } = Route.useParams()
-  const user = useSharedSession()
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-2xl flex-col justify-center gap-3 p-8">
-      <p className="text-sm font-semibold" style={{ color: "var(--primary)" }}>
-        OpenCtx Trail
-      </p>
-      <h1 className="text-2xl font-semibold">Team activity</h1>
-      <dl
-        className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 rounded-md border p-4 text-sm"
-        style={{ borderColor: "var(--border)" }}
-      >
-        <dt style={{ color: "var(--muted-foreground)" }}>Served by</dt>
-        <dd className="font-mono">open-context-trail worker</dd>
-        <dt style={{ color: "var(--muted-foreground)" }}>Organization</dt>
-        <dd className="font-mono">{orgId}</dd>
-        <dt style={{ color: "var(--muted-foreground)" }}>Team</dt>
-        <dd className="font-mono">{teamId}</dd>
-        <dt style={{ color: "var(--muted-foreground)" }}>Signed in as</dt>
-        <dd>
-          {user === undefined
-            ? "checking session…"
-            : user === null
-              ? "not signed in"
-              : `${user.name} <${user.email}> (shared session ✓)`}
-        </dd>
-      </dl>
-      <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
-        Event tracking lands here next.
-      </p>
-      <p className="text-sm">
-        <a
-          href={`/o/${orgId}/t/${teamId}`}
-          className="underline underline-offset-4"
-        >
-          ← Back to admin dashboard
-        </a>
-      </p>
-    </main>
+    <SidebarProvider>
+      <TrailSidebar orgId={orgId} teamId={teamId} />
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+          <SidebarTrigger className="-ml-1" />
+          <Separator orientation="vertical" className="mr-2 h-4" />
+          <span className="text-sm font-medium">Trail</span>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <Outlet />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

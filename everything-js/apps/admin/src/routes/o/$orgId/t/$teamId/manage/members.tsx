@@ -2,10 +2,10 @@ import { useState } from "react"
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
+import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@open-context/ui/components/card"
 import {
   Dialog,
   DialogContent,
@@ -14,16 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@open-context/ui/components/dialog"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@open-context/ui/components/select"
 import {
   Table,
   TableBody,
@@ -31,7 +31,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@open-context/ui/components/table"
 import { authClient } from "@/lib/auth/client"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")

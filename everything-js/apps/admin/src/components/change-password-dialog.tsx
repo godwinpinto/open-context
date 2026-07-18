@@ -1,7 +1,7 @@
 import { useState } from "react"
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@open-context/ui/components/button"
+import { Checkbox } from "@open-context/ui/components/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@open-context/ui/components/dialog"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 
 export function ChangePasswordDialog({

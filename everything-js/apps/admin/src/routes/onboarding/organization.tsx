@@ -2,16 +2,16 @@ import { useState } from "react"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 import { useQueryClient } from "@tanstack/react-query"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@open-context/ui/components/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@open-context/ui/components/card"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 import { getCanCreateOrganization } from "@/lib/auth/organization"
 import { getServerSession } from "@/lib/auth/session"

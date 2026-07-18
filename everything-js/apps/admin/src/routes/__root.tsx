@@ -7,7 +7,7 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 import type { QueryClient } from "@tanstack/react-query"
 
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@open-context/ui/components/tooltip"
 import appCss from "../styles.css?url"
 
 interface RouterContext {

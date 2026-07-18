@@ -12,11 +12,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Checkbox } from "@/components/ui/checkbox"
+} from "@open-context/ui/components/alert-dialog"
+import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@open-context/ui/components/card"
+import { Checkbox } from "@open-context/ui/components/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -25,9 +25,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@open-context/ui/components/dialog"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")

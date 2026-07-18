@@ -2,11 +2,11 @@ import { useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { QRCodeSVG } from "qrcode.react"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
+import { Card, CardContent } from "@open-context/ui/components/card"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId/account/security")({

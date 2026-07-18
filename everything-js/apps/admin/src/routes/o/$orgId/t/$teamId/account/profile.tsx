@@ -1,11 +1,11 @@
 import { useState } from "react"
 import { createFileRoute, getRouteApi, useRouter } from "@tanstack/react-router"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
+import { Button } from "@open-context/ui/components/button"
+import { Card, CardContent } from "@open-context/ui/components/card"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { updateUserName } from "@/lib/auth/account"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")

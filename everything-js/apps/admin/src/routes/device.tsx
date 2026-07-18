@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@open-context/ui/components/button"
 import {
   Card,
   CardContent,
@@ -9,9 +9,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+} from "@open-context/ui/components/card"
+import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 import { getServerSession } from "@/lib/auth/session"
 

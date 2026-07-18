@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@open-context/ui/components/card"
 import { authClient } from "@/lib/auth/client"
 import { getServerSession } from "@/lib/auth/session"
 

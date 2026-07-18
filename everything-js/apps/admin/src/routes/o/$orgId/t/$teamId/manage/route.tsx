@@ -1,6 +1,6 @@
 import { createFileRoute, getRouteApi, Link, Outlet, useLocation } from "@tanstack/react-router"
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger } from "@open-context/ui/components/tabs"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
 

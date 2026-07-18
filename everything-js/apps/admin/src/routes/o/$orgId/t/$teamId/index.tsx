@@ -5,7 +5,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "@open-context/ui/components/card"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
 

@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { UAParser } from "ua-parser-js"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
+import { Card, CardContent } from "@open-context/ui/components/card"
 import {
   Table,
   TableBody,
@@ -12,7 +12,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@open-context/ui/components/table"
 import { authClient } from "@/lib/auth/client"
 import { getUserSessions, revokeOtherUserSessions, revokeUserSession } from "@/lib/auth/account"
 

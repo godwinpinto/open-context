@@ -1,12 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@open-context/ui/components/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@open-context/ui/components/sidebar"
 import { getServerSession } from "@/lib/auth/session"
 import { getOrgTeamContext } from "@/lib/auth/organization"
 

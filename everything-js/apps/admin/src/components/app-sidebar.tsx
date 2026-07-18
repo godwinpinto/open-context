@@ -1,6 +1,7 @@
 import { useState } from "react"
 import {
   ChevronsUpDown,
+  Footprints,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -11,7 +12,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
 import { ChangePasswordDialog } from "@/components/change-password-dialog"
 import {
   DropdownMenu,
@@ -21,7 +22,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@open-context/ui/components/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -33,7 +34,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar"
+} from "@open-context/ui/components/sidebar"
 import { authClient } from "@/lib/auth/client"
 import { getCanCreateOrganization } from "@/lib/auth/organization"
 import type { getServerSession } from "@/lib/auth/session"
@@ -227,6 +228,26 @@ export function AppSidebar({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarGroup>
+          <SidebarGroupLabel>Modules</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {/* Trail is a separate worker on this hostname — full
+                    document navigation, so a plain anchor, not a Link. */}
+                <SidebarMenuButton
+                  render={
+                    <a href={`/trail/o/${organization.id}/t/${team.id}`} />
+                  }
+                  tooltip="Trail"
+                >
+                  <Footprints />
+                  <span>Trail</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
