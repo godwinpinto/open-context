@@ -1,0 +1,19 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "open-context-trail",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true
+  },
+  // Path prefix on the shared hostname. Routes take precedence over
+  // admin's Custom Domain, so /trail* lands here and everything else
+  // stays with admin.
+  "routes": [
+    {
+      "pattern": "openctx.encatch.dev/trail*",
+      "zone_name": "encatch.dev"
+    }
+  ]
+}
