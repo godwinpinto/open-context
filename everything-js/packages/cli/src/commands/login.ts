@@ -49,8 +49,8 @@ function openInBrowser(url: string) {
   }
 }
 
-export async function login(baseURLOverride?: string) {
-  const baseURL = resolveBaseURL(baseURLOverride)
+export async function login(options: { baseURL?: string; useKeyring?: boolean } = {}) {
+  const baseURL = resolveBaseURL(options.baseURL)
   const client = createClient(baseURL)
 
   const { data, error } = await client.device.code({
@@ -87,12 +87,19 @@ export async function login(baseURLOverride?: string) {
 
     if (token) {
       const accessToken = token as unknown as DeviceTokenResponse
-      saveCredentials({
-        baseURL,
-        token: accessToken.access_token,
-        expiresIn: accessToken.expires_in,
-      })
-      console.log("Signed in.")
+      const storage = saveCredentials(
+        {
+          baseURL,
+          token: accessToken.access_token,
+          expiresIn: accessToken.expires_in,
+        },
+        { useKeyring: options.useKeyring },
+      )
+      console.log(
+        storage === "keyring"
+          ? "Signed in. Token stored in your OS keychain."
+          : "Signed in. Token stored in ~/.open-context/credentials.json.",
+      )
       return
     }
 

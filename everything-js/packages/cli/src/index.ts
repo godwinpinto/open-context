@@ -6,9 +6,12 @@ import { whoami } from "./commands/whoami.js"
 const [, , command, ...rest] = process.argv
 
 switch (command) {
-  case "login":
-    await login(rest[0])
+  case "login": {
+    const flags = new Set(rest.filter((arg) => arg.startsWith("--")))
+    const baseURL = rest.find((arg) => !arg.startsWith("--"))
+    await login({ baseURL, useKeyring: flags.has("--use-keyring") })
     break
+  }
   case "logout":
     logout()
     break
@@ -16,6 +19,6 @@ switch (command) {
     await whoami()
     break
   default:
-    console.log("Usage: open-context <login|logout|whoami>")
+    console.log("Usage: open-context <login|logout|whoami> [--use-keyring]")
     process.exitCode = command ? 1 : 0
 }
