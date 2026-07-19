@@ -9,6 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@open-context/ui/components/card"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@open-context/ui/components/dialog"
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import { dashboardsClient } from "@/lib/modules/dashboards-client"
 
@@ -26,11 +38,20 @@ export default function DashboardsPage({
   })
   const dashboards = dashboardsQuery.data?.dashboards ?? []
 
+  const [createOpen, setCreateOpen] = useState(false)
   const [name, setName] = useState("")
+  const [groupName, setGroupName] = useState("")
   const create = useMutation({
-    mutationFn: () => dashboardsClient.createDashboard({ teamId, name }),
+    mutationFn: () =>
+      dashboardsClient.createDashboard({
+        teamId,
+        name,
+        ...(groupName.trim() ? { groupName: groupName.trim() } : {}),
+      }),
     onSuccess: () => {
       setName("")
+      setGroupName("")
+      setCreateOpen(false)
       queryClient.invalidateQueries({ queryKey: ["dashboards", teamId] })
     },
   })
@@ -50,17 +71,40 @@ export default function DashboardsPage({
             server (&quot;add a panel showing daily events by type&quot;).
           </p>
         </div>
-        <div className="flex gap-2">
-          <Input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            placeholder="New dashboard name"
-            className="w-56"
+        <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <DialogTrigger
+            render={(props) => <Button {...props}>Create dashboard</Button>}
           />
-          <Button onClick={() => create.mutate()} disabled={!name || create.isPending}>
-            Create
-          </Button>
-        </div>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create dashboard</DialogTitle>
+            </DialogHeader>
+            <FieldGroup>
+              <Field>
+                <FieldLabel>Name</FieldLabel>
+                <Input
+                  value={name}
+                  onChange={(event) => setName(event.target.value)}
+                  placeholder="Product Overview"
+                />
+              </Field>
+              <Field>
+                <FieldLabel>Group (optional)</FieldLabel>
+                <Input
+                  value={groupName}
+                  onChange={(event) => setGroupName(event.target.value)}
+                  placeholder="Shown as a collapsible section in the sidebar"
+                />
+              </Field>
+              <Button
+                onClick={() => create.mutate()}
+                disabled={!name || create.isPending}
+              >
+                {create.isPending ? "Creating…" : "Create"}
+              </Button>
+            </FieldGroup>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {dashboards.length === 0 ? (
@@ -87,6 +131,7 @@ export default function DashboardsPage({
                 <CardDescription>
                   {dashboard.layout.length} panel
                   {dashboard.layout.length === 1 ? "" : "s"}
+                  {dashboard.groupName ? ` · ${dashboard.groupName}` : ""}
                 </CardDescription>
               </CardHeader>
               <Button

@@ -242,7 +242,7 @@ export function buildServer(env: Env, user: AuthedUser): McpServer {
     "dashboards_preview_query",
     {
       description:
-        "Execute panel SQL (SQLite SELECT over the sources from dashboards_list_sources) and return rows or the error. Iterate here until the result matches what the user asked for, THEN save with dashboards_save_panel. fromMs/toMs simulate the dashboard's global time-range filter (unix ms).",
+        "Execute panel SQL (SQLite SELECT over the sources from dashboards_list_sources) and return rows or the error. Iterate here until the result matches what the user asked for. IMPORTANT: previewing does NOT add anything to the dashboard. After a good preview, present the user a short summary of the result (row count, columns, a few sample values), suggest 1-2 suitable chart types, and ASK whether to add it and how they'd like it represented. Only call dashboards_save_panel after they confirm. fromMs/toMs simulate the dashboard's global time-range filter (unix ms).",
       inputSchema: {
         teamId: z.string(),
         sql: z.string(),
@@ -250,32 +250,49 @@ export function buildServer(env: Env, user: AuthedUser): McpServer {
         toMs: z.number().optional(),
       },
     },
-    async ({ teamId, sql, fromMs, toMs }) =>
-      text(
-        await call(
-          dashboardsAdminRouter.previewQuery,
-          {
-            teamId,
-            sql,
-            range: {
-              fromMs: fromMs ?? Date.now() - 7 * 86400_000,
-              toMs: toMs ?? Date.now(),
-            },
+    async ({ teamId, sql, fromMs, toMs }) => {
+      const result = await call(
+        dashboardsAdminRouter.previewQuery,
+        {
+          teamId,
+          sql,
+          range: {
+            fromMs: fromMs ?? Date.now() - 7 * 86400_000,
+            toMs: toMs ?? Date.now(),
           },
-          { context: adminCtx },
-        ),
-      ),
+        },
+        { context: adminCtx },
+      )
+      if (!result.ok) return text(result)
+      // Compact summary + sample so the model can brief the user
+      // without dumping the full result set into chat.
+      return text({
+        ok: true,
+        summary: {
+          rowCount: result.rowCount,
+          columns: result.columns,
+          sample: result.rows.slice(0, 5),
+        },
+        nextStep:
+          "Summarize this for the user, suggest chart types, and ask for confirmation before dashboards_save_panel.",
+      })
+    },
   )
 
   server.registerTool(
     "dashboards_save_panel",
     {
       description:
-        "Save a previewed query as a dashboard panel. chartType: line/bar/area (needs xKey + yKeys), stat (needs valueKey), pie (xKey = label, valueKey = value), table (no keys needed). Keys must be column names from the query result. The panel lands on the dashboard grid; the user arranges/resizes it in the UI.",
+        "Save a previewed query as a dashboard panel. ONLY call this after the user has explicitly confirmed they want the panel added AND agreed on the representation — never save unprompted after a preview. chartType: line/bar/area (needs xKey + yKeys), stat (needs valueKey), pie (xKey = label, valueKey = value), table (no keys needed). Keys must be column names from the query result. The panel lands on the dashboard grid; the user arranges/resizes it in the UI.",
       inputSchema: {
         teamId: z.string(),
         dashboardId: z.string(),
         title: z.string(),
+        description: z
+          .string()
+          .describe(
+            "One-line description of what the panel shows (displayed under the title). Always provide this — derive it from the user's request and the query.",
+          ),
         chartType: z.enum(["line", "bar", "area", "stat", "table", "pie"]),
         sql: z.string(),
         xKey: z.string().optional(),
@@ -283,7 +300,7 @@ export function buildServer(env: Env, user: AuthedUser): McpServer {
         valueKey: z.string().optional(),
       },
     },
-    async ({ teamId, dashboardId, title, chartType, sql, xKey, yKeys, valueKey }) =>
+    async ({ teamId, dashboardId, title, description, chartType, sql, xKey, yKeys, valueKey }) =>
       text(
         await call(
           dashboardsAdminRouter.savePanel,
@@ -291,6 +308,7 @@ export function buildServer(env: Env, user: AuthedUser): McpServer {
             teamId,
             dashboardId,
             title,
+            ...(description ? { description } : {}),
             chartType,
             sql,
             config: {

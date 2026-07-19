@@ -1,13 +1,32 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import GridLayout, { useContainerWidth, type Layout } from "react-grid-layout"
+import { MoreHorizontal, Pencil, X } from "lucide-react"
 
 import "react-grid-layout/css/styles.css"
+import "react-resizable/css/styles.css"
 
 import type { ChartType, PanelConfig } from "@open-context/module-dashboards"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@open-context/ui/components/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -15,6 +34,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
+import {
+  Field,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
+import { Input } from "@open-context/ui/components/input"
 import {
   Select,
   SelectContent,
@@ -24,12 +49,16 @@ import {
 } from "@open-context/ui/components/select"
 import { Skeleton } from "@open-context/ui/components/skeleton"
 import { PanelChart } from "@/components/panel-chart"
-import {
-  RANGE_PRESETS,
-  dashboardsClient,
-  rangeForKey,
-  type RangeKey,
-} from "@/lib/modules/dashboards-client"
+import { TimeRangePicker, type TimeRange } from "@/components/time-range-picker"
+import { dashboardsClient, rangeForKey } from "@/lib/modules/dashboards-client"
+
+type PanelMeta = {
+  id: string
+  title: string
+  description: string | null
+  chartType: ChartType
+  config: PanelConfig
+}
 
 export default function DashboardView({
   teamId,
@@ -39,15 +68,21 @@ export default function DashboardView({
   dashboardId: string
 }) {
   const queryClient = useQueryClient()
-  const [rangeKey, setRangeKey] = useState<RangeKey>("7d")
-  const range = useMemo(() => rangeForKey(rangeKey), [rangeKey])
+  const [range, setRange] = useState<TimeRange>(() => rangeForKey("7d"))
+  // Layout is read-only until the user explicitly enters edit mode —
+  // no accidental drags while reading charts. Edits buffer locally in
+  // pendingLayout and hit the server only on "Save layout"; Cancel
+  // discards.
+  const [editMode, setEditMode] = useState(false)
+  const [pendingLayout, setPendingLayout] = useState<Layout | null>(null)
+  const [shareOpen, setShareOpen] = useState(false)
 
   const dashboardQuery = useQuery({
     queryKey: ["dashboard", teamId, dashboardId],
     queryFn: () => dashboardsClient.getDashboard({ teamId, id: dashboardId }),
   })
   const dashboard = dashboardQuery.data?.dashboard
-  const panels = dashboardQuery.data?.panels ?? []
+  const panels: PanelMeta[] = dashboardQuery.data?.panels ?? []
   const shares = dashboardQuery.data?.shares ?? []
 
   const invalidate = () =>
@@ -69,6 +104,11 @@ export default function DashboardView({
   })
   const deletePanel = useMutation({
     mutationFn: (id: string) => dashboardsClient.deletePanel({ teamId, id }),
+    onSuccess: invalidate,
+  })
+  const updatePanel = useMutation({
+    mutationFn: (input: { id: string; title: string; description: string }) =>
+      dashboardsClient.updatePanel({ teamId, ...input }),
     onSuccess: invalidate,
   })
 
@@ -105,42 +145,66 @@ export default function DashboardView({
     )
   }
 
-  const layout: Layout = dashboard.layout.map((item) => ({
+  const persistedLayout: Layout = dashboard.layout.map((item) => ({
     i: item.panelId,
     x: item.x,
     y: item.y,
     w: item.w,
     h: item.h,
   }))
+  const layout = (editMode && pendingLayout) || persistedLayout
 
   return (
     <div className="flex flex-col gap-4 p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-lg font-semibold">{dashboard.name}</h1>
-        <div className="flex items-center gap-2">
-          <Select
-            value={rangeKey}
-            onValueChange={(value) => setRangeKey(value as RangeKey)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RANGE_PRESETS.map((preset) => (
-                <SelectItem key={preset.key} value={preset.key}>
-                  {preset.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Dialog>
-            <DialogTrigger
-              render={(props) => (
-                <Button variant="outline" {...props}>
-                  Share
-                </Button>
-              )}
-            />
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-semibold">{dashboard.name}</h1>
+          {dashboard.groupName ? (
+            <Badge variant="outline">{dashboard.groupName}</Badge>
+          ) : null}
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {editMode ? (
+            <>
+              <Button
+                onClick={() => {
+                  if (pendingLayout) saveLayout.mutate(pendingLayout)
+                  setPendingLayout(null)
+                  setEditMode(false)
+                }}
+              >
+                Save layout
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPendingLayout(null)
+                  setEditMode(false)
+                }}
+              >
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={(props) => (
+                  <Button variant="outline" size="icon" {...props}>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                )}
+              />
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setEditMode(true)}>
+                  Edit layout
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShareOpen(true)}>
+                  Share…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <Dialog open={shareOpen} onOpenChange={setShareOpen}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Share dashboard</DialogTitle>
@@ -242,6 +306,15 @@ export default function DashboardView({
         </div>
       </div>
 
+      <TimeRangePicker value={range} onChange={setRange} />
+
+      {editMode ? (
+        <p className="text-muted-foreground text-xs">
+          Drag panels by their header, resize from the bottom-right corner.
+          Nothing is saved until you click Save layout.
+        </p>
+      ) : null}
+
       {panels.length === 0 ? (
         <div className="text-muted-foreground rounded-lg border border-dashed p-10 text-center text-sm">
           No panels yet. Connect an MCP client and ask for the data you want —
@@ -253,10 +326,11 @@ export default function DashboardView({
           <GridLayout
             layout={layout}
             gridConfig={{ cols: 12, rowHeight: 64 }}
-            dragConfig={{ handle: ".panel-drag-handle" }}
+            dragConfig={{ enabled: editMode, handle: ".panel-drag-handle" }}
+            resizeConfig={{ enabled: editMode, handles: ["se"] }}
             width={width || 1200}
             onLayoutChange={(next) => {
-              // Persist only real changes (RGL fires on mount too).
+              if (!editMode) return
               const changed =
                 JSON.stringify(
                   next.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
@@ -264,7 +338,8 @@ export default function DashboardView({
                 JSON.stringify(
                   layout.map(({ i, x, y, w, h }) => ({ i, x, y, w, h })),
                 )
-              if (changed) saveLayout.mutate(next)
+              // Buffer only — persisted on "Save layout".
+              if (changed) setPendingLayout(next)
             }}
           >
             {panels.map((panel) => (
@@ -272,17 +347,64 @@ export default function DashboardView({
                 key={panel.id}
                 className="bg-card flex flex-col overflow-hidden rounded-lg border shadow-sm"
               >
-                <div className="panel-drag-handle flex cursor-move items-center justify-between border-b px-3 py-1.5">
-                  <p className="truncate text-sm font-medium">{panel.title}</p>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive h-6 px-1.5 text-xs"
-                    onMouseDown={(event) => event.stopPropagation()}
-                    onClick={() => deletePanel.mutate(panel.id)}
-                  >
-                    ✕
-                  </Button>
+                <div
+                  className={`flex items-center justify-between gap-1 border-b px-3 py-1.5 ${
+                    editMode ? "panel-drag-handle cursor-move" : ""
+                  }`}
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">{panel.title}</p>
+                    {panel.description ? (
+                      <p className="text-muted-foreground truncate text-xs">
+                        {panel.description}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="flex shrink-0 items-center">
+                    <PanelEditDialog
+                      panel={panel}
+                      onSave={(title, description) =>
+                        updatePanel.mutate({ id: panel.id, title, description })
+                      }
+                    />
+                    {editMode ? (
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={(props) => (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-muted-foreground hover:text-destructive h-6 w-6 p-0"
+                              onMouseDown={(event) => event.stopPropagation()}
+                              {...props}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                        />
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Remove &quot;{panel.title}&quot;?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              The panel and its query are deleted from this
+                              dashboard. Re-adding it later means re-creating
+                              it via MCP.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => deletePanel.mutate(panel.id)}
+                            >
+                              Remove panel
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="min-h-0 flex-1 p-2">
                   <PanelBody teamId={teamId} panel={panel} range={range} />
@@ -296,14 +418,80 @@ export default function DashboardView({
   )
 }
 
+function PanelEditDialog({
+  panel,
+  onSave,
+}: {
+  panel: PanelMeta
+  onSave: (title: string, description: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState(panel.title)
+  const [description, setDescription] = useState(panel.description ?? "")
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next)
+        if (next) {
+          setTitle(panel.title)
+          setDescription(panel.description ?? "")
+        }
+      }}
+    >
+      <DialogTrigger
+        render={(props) => (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="text-muted-foreground h-6 w-6 p-0"
+            onMouseDown={(event) => event.stopPropagation()}
+            {...props}
+          >
+            <Pencil className="h-3 w-3" />
+          </Button>
+        )}
+      />
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit panel</DialogTitle>
+        </DialogHeader>
+        <FieldGroup>
+          <Field>
+            <FieldLabel>Title</FieldLabel>
+            <Input value={title} onChange={(event) => setTitle(event.target.value)} />
+          </Field>
+          <Field>
+            <FieldLabel>Description</FieldLabel>
+            <Input
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Optional context shown under the title"
+            />
+          </Field>
+          <Button
+            onClick={() => {
+              onSave(title, description)
+              setOpen(false)
+            }}
+            disabled={!title}
+          >
+            Save
+          </Button>
+        </FieldGroup>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 function PanelBody({
   teamId,
   panel,
   range,
 }: {
   teamId: string
-  panel: { id: string; chartType: ChartType; config: PanelConfig }
-  range: { fromMs: number; toMs: number }
+  panel: PanelMeta
+  range: TimeRange
 }) {
   const dataQuery = useQuery({
     queryKey: ["panel-data", teamId, panel.id, range.fromMs, range.toMs],

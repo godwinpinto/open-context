@@ -47,7 +47,13 @@ const listDashboards = base
   })
 
 const createDashboard = base
-  .input(z.object({ teamId: z.string(), name: z.string().min(1).max(100) }))
+  .input(
+    z.object({
+      teamId: z.string(),
+      name: z.string().min(1).max(100),
+      groupName: z.string().min(1).max(60).optional(),
+    }),
+  )
   .handler(async ({ input, context }) => {
     await context.assertTeamAccess(input.teamId)
     const now = new Date()
@@ -55,12 +61,40 @@ const createDashboard = base
       id: crypto.randomUUID(),
       teamId: input.teamId,
       name: input.name,
+      groupName: input.groupName ?? null,
       layout: [],
       createdAt: now,
       updatedAt: now,
     }
     await context.db.insert(dashDashboard).values(dashboard)
     return { dashboard }
+  })
+
+const updateDashboard = base
+  .input(
+    z.object({
+      teamId: z.string(),
+      id: z.string(),
+      name: z.string().min(1).max(100).optional(),
+      // Empty string clears the group.
+      groupName: z.string().max(60).optional(),
+    }),
+  )
+  .handler(async ({ input, context }) => {
+    await context.assertTeamAccess(input.teamId)
+    await context.db
+      .update(dashDashboard)
+      .set({
+        ...(input.name !== undefined ? { name: input.name } : {}),
+        ...(input.groupName !== undefined
+          ? { groupName: input.groupName || null }
+          : {}),
+        updatedAt: new Date(),
+      })
+      .where(
+        and(eq(dashDashboard.teamId, input.teamId), eq(dashDashboard.id, input.id)),
+      )
+    return { ok: true }
   })
 
 const deleteDashboard = base
@@ -161,6 +195,7 @@ const savePanel = base
       teamId: z.string(),
       dashboardId: z.string(),
       title: z.string().min(1).max(120),
+      description: z.string().max(500).optional(),
       chartType: chartTypeSchema,
       sql: z.string(),
       config: configSchema,
@@ -186,6 +221,7 @@ const savePanel = base
       teamId: input.teamId,
       dashboardId: input.dashboardId,
       title: input.title,
+      description: input.description ?? null,
       chartType: input.chartType,
       sql: input.sql,
       config: input.config,
@@ -208,6 +244,30 @@ const savePanel = base
       })
       .where(eq(dashDashboard.id, dashboard.id))
     return { panel }
+  })
+
+const updatePanel = base
+  .input(
+    z.object({
+      teamId: z.string(),
+      id: z.string(),
+      title: z.string().min(1).max(120).optional(),
+      // Empty string clears the description.
+      description: z.string().max(500).optional(),
+    }),
+  )
+  .handler(async ({ input, context }) => {
+    await context.assertTeamAccess(input.teamId)
+    await context.db
+      .update(dashPanel)
+      .set({
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(input.description !== undefined
+          ? { description: input.description || null }
+          : {}),
+      })
+      .where(and(eq(dashPanel.teamId, input.teamId), eq(dashPanel.id, input.id)))
+    return { ok: true }
   })
 
 const deletePanel = base
@@ -304,12 +364,14 @@ const deleteShare = base
 export const dashboardsAdminRouter = {
   listDashboards,
   createDashboard,
+  updateDashboard,
   deleteDashboard,
   getDashboard,
   saveLayout,
   listSources,
   previewQuery,
   savePanel,
+  updatePanel,
   deletePanel,
   runPanel,
   createShare,

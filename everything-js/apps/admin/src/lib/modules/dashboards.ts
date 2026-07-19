@@ -76,6 +76,7 @@ export async function handleDashboardShare(request: Request, env: Env) {
       .select({
         id: dashPanel.id,
         title: dashPanel.title,
+        description: dashPanel.description,
         chartType: dashPanel.chartType,
         config: dashPanel.config,
       })

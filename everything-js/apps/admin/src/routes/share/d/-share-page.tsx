@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 
 import type { ChartType, PanelConfig, PanelLayout } from "@open-context/module-dashboards"
@@ -9,20 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@open-context/ui/components/card"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@open-context/ui/components/select"
 import { Skeleton } from "@open-context/ui/components/skeleton"
 import { PanelChart, type PanelData } from "@/components/panel-chart"
-import {
-  RANGE_PRESETS,
-  rangeForKey,
-  type RangeKey,
-} from "@/lib/modules/dashboards-client"
+import { TimeRangePicker, type TimeRange } from "@/components/time-range-picker"
+import { rangeForKey } from "@/lib/modules/dashboards-client"
 
 // Public read-only dashboard view: live data, the viewer controls ONLY
 // the global time range. The share token is validated server-side on
@@ -46,8 +36,7 @@ async function shareFetch<T>(path: string): Promise<T> {
 }
 
 export default function SharePage({ token }: { token: string }) {
-  const [rangeKey, setRangeKey] = useState<RangeKey>("7d")
-  const range = useMemo(() => rangeForKey(rangeKey), [rangeKey])
+  const [range, setRange] = useState<TimeRange>(() => rangeForKey("7d"))
 
   const metaQuery = useQuery({
     queryKey: ["share", token],
@@ -92,21 +81,7 @@ export default function SharePage({ token }: { token: string }) {
       <div className="mx-auto flex max-w-6xl flex-col gap-4 p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="text-lg font-semibold">{meta.name}</h1>
-          <Select
-            value={rangeKey}
-            onValueChange={(value) => setRangeKey(value as RangeKey)}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {RANGE_PRESETS.map((preset) => (
-                <SelectItem key={preset.key} value={preset.key}>
-                  {preset.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <TimeRangePicker value={range} onChange={setRange} />
         </div>
 
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">

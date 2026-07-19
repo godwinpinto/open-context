@@ -28,6 +28,7 @@ import { useQuery } from "@tanstack/react-query"
 
 import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
 import { ChangePasswordDialog } from "@/components/change-password-dialog"
+import { DashboardsSidebarTree } from "@/components/dashboards-sidebar-tree"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,8 +171,14 @@ export function AppSidebar({
     isActive: boolean
     link: React.ReactElement
   }
-  let section: { id: string; title: string; items: SectionItem[] } | null =
-    null
+  let section: {
+    id: string
+    title: string
+    items: SectionItem[]
+    // Optional custom content rendered below the items (e.g. the
+    // dashboards group tree).
+    extra?: React.ReactNode
+  } | null = null
   if (pathSection === "trail") {
     section = {
       id: "trail",
@@ -263,14 +270,17 @@ export function AppSidebar({
       title: "Dashboards",
       items: [
         {
-          title: "Dashboards",
+          title: "All dashboards",
           icon: LayoutDashboard,
-          isActive: true,
+          isActive: location.pathname.endsWith("/dashboards"),
           link: (
             <Link to="/o/$orgId/t/$teamId/dashboards" params={linkParams} />
           ),
         },
       ],
+      extra: (
+        <DashboardsSidebarTree orgId={organization.id} teamId={team.id} />
+      ),
     }
   } else if (pathSection === "webhooks") {
     section = {
@@ -575,6 +585,7 @@ export function AppSidebar({
                     </SidebarMenuItem>
                   ))}
                 </SidebarMenu>
+                {section.extra ?? null}
               </SidebarGroupContent>
             </SidebarGroup>
           </div>

@@ -30,6 +30,9 @@ export const dashDashboard = sqliteTable(
     id: text("id").primaryKey(),
     teamId: text("team_id").notNull(),
     name: text("name").notNull(),
+    // One-level grouping — dashboards sharing a groupName render as a
+    // collapsible section in the sidebar. Null = ungrouped.
+    groupName: text("group_name"),
     layout: text("layout", { mode: "json" }).$type<PanelLayout[]>().notNull(),
     createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
@@ -44,6 +47,7 @@ export const dashPanel = sqliteTable(
     teamId: text("team_id").notNull(),
     dashboardId: text("dashboard_id").notNull(),
     title: text("title").notNull(),
+    description: text("description"),
     chartType: text("chart_type").$type<ChartType>().notNull(),
     // Guarded SQL over the source CTEs (see engine.ts) — stored as
     // authored, sandboxed at execution time.
