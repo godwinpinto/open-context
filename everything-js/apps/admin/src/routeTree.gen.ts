@@ -15,6 +15,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DeviceRouteImport } from './routes/device'
 import { Route as TwoFactorRouteImport } from './routes/two-factor'
 import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './routes/[.]well-known/oauth-authorization-server'
+import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
 import { Route as DotwellKnownOpenidConfigurationRouteImport } from './routes/[.]well-known/openid-configuration'
 import { Route as OnboardingOrganizationRouteImport } from './routes/onboarding/organization'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -80,6 +81,12 @@ const DotwellKnownOauthAuthorizationServerRoute =
   DotwellKnownOauthAuthorizationServerRouteImport.update({
     id: '/.well-known/oauth-authorization-server',
     path: '/.well-known/oauth-authorization-server',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownOauthProtectedResourceRoute =
+  DotwellKnownOauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
     getParentRoute: () => rootRouteImport,
   } as any)
 const DotwellKnownOpenidConfigurationRoute =
@@ -283,6 +290,7 @@ export interface FileRoutesByFullPath {
   '/device': typeof DeviceRoute
   '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -326,6 +334,7 @@ export interface FileRoutesByTo {
   '/device': typeof DeviceRoute
   '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -367,6 +376,7 @@ export interface FileRoutesById {
   '/device': typeof DeviceRoute
   '/two-factor': typeof TwoFactorRoute
   '/.well-known/oauth-authorization-server': typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -412,6 +422,7 @@ export interface FileRouteTypes {
     | '/device'
     | '/two-factor'
     | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
     | '/api/auth/$'
@@ -455,6 +466,7 @@ export interface FileRouteTypes {
     | '/device'
     | '/two-factor'
     | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
     | '/api/auth/$'
@@ -495,6 +507,7 @@ export interface FileRouteTypes {
     | '/device'
     | '/two-factor'
     | '/.well-known/oauth-authorization-server'
+    | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
     | '/api/auth/$'
@@ -539,6 +552,7 @@ export interface RootRouteChildren {
   DeviceRoute: typeof DeviceRoute
   TwoFactorRoute: typeof TwoFactorRoute
   DotwellKnownOauthAuthorizationServerRoute: typeof DotwellKnownOauthAuthorizationServerRouteWithChildren
+  DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   DotwellKnownOpenidConfigurationRoute: typeof DotwellKnownOpenidConfigurationRoute
   OnboardingOrganizationRoute: typeof OnboardingOrganizationRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -598,6 +612,13 @@ declare module '@tanstack/react-router' {
       path: '/.well-known/oauth-authorization-server'
       fullPath: '/.well-known/oauth-authorization-server'
       preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof DotwellKnownOauthProtectedResourceRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/openid-configuration': {
@@ -943,6 +964,8 @@ const rootRouteChildren: RootRouteChildren = {
   TwoFactorRoute: TwoFactorRoute,
   DotwellKnownOauthAuthorizationServerRoute:
     DotwellKnownOauthAuthorizationServerRouteWithChildren,
+  DotwellKnownOauthProtectedResourceRoute:
+    DotwellKnownOauthProtectedResourceRoute,
   DotwellKnownOpenidConfigurationRoute: DotwellKnownOpenidConfigurationRoute,
   OnboardingOrganizationRoute: OnboardingOrganizationRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

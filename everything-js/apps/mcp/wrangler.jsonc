@@ -1,0 +1,34 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "open-context-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  // Same-hostname path prefix (routes beat admin's Custom Domain) —
+  // same-origin keeps the OAuth discovery documents admin serves at
+  // /.well-known/* valid for MCP clients hitting /mcp.
+  "routes": [
+    {
+      "pattern": "openctx.encatch.dev/mcp*",
+      "zone_name": "encatch.dev"
+    }
+  ],
+  "vars": {
+    // OAuth tokens are validated by calling admin's userinfo endpoint —
+    // URL-based (not a service binding) so the same code runs on Node
+    // later. Overridden to http://localhost:3000 in .dev.vars.
+    "ADMIN_URL": "https://openctx.encatch.dev"
+  },
+  // Same database as admin — the modular monolith running in a second
+  // host process.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "open-context-admin-db",
+      "database_id": "6f46df67-8e4e-4c2c-aaa8-68fa518096ef"
+    }
+  ]
+}

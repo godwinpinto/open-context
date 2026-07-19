@@ -1,0 +1,28 @@
+{
+  "name": "@open-context/mcp",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 3002 --persist-to ../admin/.wrangler/state",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/mcp": "0.3.1",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "@open-context/core": "workspace:*",
+    "@open-context/module-experiments": "workspace:*",
+    "@open-context/module-flags": "workspace:*",
+    "@open-context/module-meter": "workspace:*",
+    "@open-context/module-trail": "workspace:*",
+    "@orpc/server": "1.14.8",
+    "drizzle-orm": "^0.45.2",
+    "hono": "4.12.31",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.112.0"
+  }
+}

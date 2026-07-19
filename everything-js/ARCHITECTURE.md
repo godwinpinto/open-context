@@ -8,7 +8,8 @@ that contribute capabilities, not deployments.
 
 ```
 apps/
-  admin/              The one deployed app: auth, org/team admin, all module UIs
+  admin/              The main app: auth, org/team admin, all module UIs
+  mcp/                MCP gateway — separate worker (Hono), /mcp* on the same hostname
 packages/
   core/               @open-context/core — platform substrate (identity layer)
   ui/                 @open-context/ui — shadcn primitives + theme (shared shell)
@@ -180,6 +181,33 @@ mutable counter column.
   and its deps are dead-code-eliminated from the server build. Module
   pages with heavy client-only deps (charts, editors) MUST use this
   pattern; the worker then only carries the ~1 KB shells.
+
+## MCP gateway (apps/mcp)
+
+A SEPARATE worker — the module-UI monolith arguments (SPA navigation,
+shared session cookies, shell duplication) don't apply to a UI-less
+protocol gateway, while isolation ones do (streaming connections from
+third-party AI clients, own bundle budget, protocol-chasing deploy
+cadence). Built on Hono + @hono/mcp + @modelcontextprotocol/sdk —
+fetch-native and URL-based throughout, so the same code runs on Node
+behind @hono/node-server.
+
+- Mounted at `openctx.encatch.dev/mcp*` (zone route beats admin's
+  Custom Domain); same-origin keeps admin's /.well-known OAuth
+  discovery valid. Admin serves /.well-known/oauth-protected-resource
+  (RFC 9728) and the gateway's 401 carries the WWW-Authenticate
+  pointer.
+- Auth: OAuth 2.1 access tokens from admin's provider, validated via
+  ADMIN_URL userinfo (env var, not a service binding — portability).
+- Tools call module procedures IN-PROCESS via oRPC `call()` with a
+  host-built context (shared D1 binding, own copy of the
+  team-membership guard) — the modular monolith running in a second
+  host, zero duplicated business logic. Stateless per-request
+  McpServer; tool closures carry the authenticated user.
+- v1 toolset: list_teams, identity_get, segments_list, trail_events,
+  meter_entitlement_value (D1 store only — ClickHouse-connector teams
+  should use the dashboard), experiments_results, flags_evaluate, and
+  one write: flags_set_state.
 
 ## Scaling escape hatches (proven, not active)
 
