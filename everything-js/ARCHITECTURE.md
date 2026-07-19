@@ -70,9 +70,15 @@ aggregated at a single `/api/mcp` endpoint behind the OAuth provider.
   only; module navigation is SPA (no doc loads).
 - Server bundle: ~844 KB gzip base; each UI route ≈ 2 KB gzip.
   **`ssr: false` does NOT remove route code from the server bundle**
-  (measured) — it only skips execution. ~500 routes ≈ 1.8–2 MB gzip,
-  inside the 3 MB free cap; Workers Paid ($5/mo, 10 MB) is the pressure
-  valve.
+  (measured; known upstream: TanStack/router#6400) — it only skips
+  execution. Mitigation (verified, see the trail route): keep the route
+  file a thin shell and load the page body via an SSR-guarded lazy
+  import —
+  `lazy(() => import.meta.env.SSR ? stub : import("./-page"))` —
+  `import.meta.env.SSR` is replaced at build time, so the page chunk
+  and its deps are dead-code-eliminated from the server build. Module
+  pages with heavy client-only deps (charts, editors) MUST use this
+  pattern; the worker then only carries the ~1 KB shells.
 
 ## Scaling escape hatches (proven, not active)
 
