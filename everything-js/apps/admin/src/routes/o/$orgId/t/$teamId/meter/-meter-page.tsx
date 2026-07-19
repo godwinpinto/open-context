@@ -1,6 +1,19 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+import { PlusIcon } from "lucide-react"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -13,11 +26,25 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import {
   Select,
@@ -26,6 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@open-context/ui/components/select"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -58,7 +86,7 @@ export default function MeterPage({
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="text-lg font-medium">Meter</h1>
-        <p className="text-muted-foreground text-sm">
+        <p className="text-sm text-muted-foreground">
           Usage metering and entitlements.
         </p>
       </div>
@@ -111,7 +139,8 @@ function MetersTab({ teamId }: { teamId: string }) {
   })
 
   const remove = useMutation({
-    mutationFn: (meterId: string) => meterClient.deleteMeter({ teamId, meterId }),
+    mutationFn: (meterId: string) =>
+      meterClient.deleteMeter({ teamId, meterId }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["meter-meters", teamId] }),
   })
@@ -120,10 +149,20 @@ function MetersTab({ teamId }: { teamId: string }) {
     <div className="flex flex-col gap-4">
       <div className="flex justify-end">
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger render={<Button size="sm" />}>New meter</DialogTrigger>
+          <DialogTrigger
+            render={(props) => (
+              <Button size="sm" {...props}>
+                <PlusIcon data-icon="inline-start" />
+                New meter
+              </Button>
+            )}
+          />
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Create meter</DialogTitle>
+              <DialogDescription>
+                A meter matches events by type and aggregates a value from them.
+              </DialogDescription>
             </DialogHeader>
             <form
               onSubmit={(event) => {
@@ -153,7 +192,9 @@ function MetersTab({ teamId }: { teamId: string }) {
                   />
                 </Field>
                 <Field>
-                  <FieldLabel>Aggregation</FieldLabel>
+                  <FieldLabel htmlFor="meter-aggregation">
+                    Aggregation
+                  </FieldLabel>
                   <Select
                     value={aggregation}
                     onValueChange={(value) =>
@@ -161,7 +202,7 @@ function MetersTab({ teamId }: { teamId: string }) {
                       setAggregation(value as (typeof AGGREGATIONS)[number])
                     }
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger id="meter-aggregation" className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -197,13 +238,16 @@ function MetersTab({ teamId }: { teamId: string }) {
                     />
                   </Field>
                 )}
-                {error && <p className="text-destructive text-sm">{error}</p>}
-                <Field>
-                  <Button type="submit" disabled={create.isPending}>
-                    Create
-                  </Button>
-                </Field>
+                {error && <FieldError>{error}</FieldError>}
               </FieldGroup>
+              <DialogFooter>
+                <Button type="submit" disabled={create.isPending}>
+                  {create.isPending ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  Create
+                </Button>
+              </DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
@@ -211,10 +255,15 @@ function MetersTab({ teamId }: { teamId: string }) {
       <Card>
         <CardContent>
           {meters.length === 0 && !metersQuery.isLoading ? (
-            <p className="text-muted-foreground text-sm">
-              No meters yet. A meter matches events by type and aggregates a
-              value from them.
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No meters yet</EmptyTitle>
+                <EmptyDescription>
+                  A meter matches events by type and aggregates a value from
+                  them.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
@@ -238,17 +287,38 @@ function MetersTab({ teamId }: { teamId: string }) {
                     <TableCell className="font-mono text-xs">
                       {row.eventType}
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {row.valueProperty ?? "—"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => remove.mutate(row.id)}
-                      >
-                        Delete
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={(props) => (
+                            <Button variant="ghost" size="sm" {...props}>
+                              Delete
+                            </Button>
+                          )}
+                        />
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete &quot;{row.slug}&quot;?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              The meter and its aggregation config are removed;
+                              this cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => remove.mutate(row.id)}
+                            >
+                              Delete meter
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -333,28 +403,35 @@ function QueryPanel({
             value={subject}
             onChange={(event) => setSubject(event.target.value)}
           />
-          <Button size="sm" disabled={run.isPending} onClick={() => run.mutate()}>
+          <Button
+            size="sm"
+            disabled={run.isPending}
+            onClick={() => run.mutate()}
+          >
             Run
           </Button>
         </div>
-        {rows && (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Window</TableHead>
-                <TableHead>Subject</TableHead>
-                <TableHead className="text-right">Value</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.length === 0 ? (
+        {rows &&
+          (rows.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No data in range</EmptyTitle>
+                <EmptyDescription>
+                  No aggregated values for this meter in the last 7 days.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={3} className="text-muted-foreground">
-                    No data in range.
-                  </TableCell>
+                  <TableHead>Window</TableHead>
+                  <TableHead>Subject</TableHead>
+                  <TableHead className="text-right">Value</TableHead>
                 </TableRow>
-              ) : (
-                rows.map((row, index) => (
+              </TableHeader>
+              <TableBody>
+                {rows.map((row, index) => (
                   <TableRow key={index}>
                     <TableCell className="font-mono text-xs">
                       {row.windowStart}
@@ -364,11 +441,10 @@ function QueryPanel({
                       {row.value}
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        )}
+                ))}
+              </TableBody>
+            </Table>
+          ))}
       </CardContent>
     </Card>
   )
@@ -387,16 +463,21 @@ function EventsTab({ teamId }: { teamId: string }) {
     <Card>
       <CardContent>
         {events.length === 0 && !eventsQuery.isLoading ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground text-sm">
-              No events yet. Ingest with an API key scoped to this team:
-            </p>
-            <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs">
-              {`curl -X POST ${window.location.origin}/api/meter/v1/events \\
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No events yet</EmptyTitle>
+              <EmptyDescription>
+                Ingest with an API key scoped to this team:
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <pre className="overflow-x-auto rounded-md bg-muted p-3 text-left font-mono text-xs">
+                {`curl -X POST ${window.location.origin}/api/meter/v1/events \\
   -H "x-api-key: oc_sk_..." -H "Content-Type: application/json" \\
   -d '{"id": "evt_1", "type": "llm.completion", "subject": "user-42", "data": {"tokens": 130, "model": "gpt-5"}}'`}
-            </pre>
-          </div>
+              </pre>
+            </EmptyContent>
+          </Empty>
         ) : (
           <Table>
             <TableHeader>
@@ -415,13 +496,13 @@ function EventsTab({ teamId }: { teamId: string }) {
                     {event.type}
                   </TableCell>
                   <TableCell>{event.subject}</TableCell>
-                  <TableCell className="text-muted-foreground max-w-64 truncate font-mono text-xs">
+                  <TableCell className="max-w-64 truncate font-mono text-xs text-muted-foreground">
                     {event.data ? JSON.stringify(event.data) : "—"}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-xs text-muted-foreground">
                     {event.source}
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-xs text-muted-foreground">
                     {new Date(event.time).toLocaleString()}
                   </TableCell>
                 </TableRow>
@@ -474,13 +555,12 @@ function GrantsPanel({
   })
 
   const voidGrant = useMutation({
-    mutationFn: (grantId: string) =>
-      meterClient.voidGrant({ teamId, grantId }),
+    mutationFn: (grantId: string) => meterClient.voidGrant({ teamId, grantId }),
     onSuccess: invalidate,
   })
 
   return (
-    <div className="bg-muted/50 flex flex-col gap-3 rounded-md p-3">
+    <div className="flex flex-col gap-3 rounded-md bg-muted/50 p-3">
       <div className="flex flex-wrap items-end gap-2">
         <Input
           className="h-8 w-28"
@@ -531,7 +611,7 @@ function GrantsPanel({
                 <TableRow key={grant.id}>
                   <TableCell className="font-mono">{grant.amount}</TableCell>
                   <TableCell>{grant.priority}</TableCell>
-                  <TableCell className="text-muted-foreground text-xs">
+                  <TableCell className="text-xs text-muted-foreground">
                     {grant.expiresAt
                       ? new Date(grant.expiresAt).toLocaleString()
                       : "never"}
@@ -632,7 +712,10 @@ function EntitlementsTab({ teamId }: { teamId: string }) {
   const [expandedGrants, setExpandedGrants] = useState<string | null>(null)
 
   const [checked, setChecked] = useState<
-    Record<string, { hasAccess: boolean; usage: number | null; balance: number | null }>
+    Record<
+      string,
+      { hasAccess: boolean; usage: number | null; balance: number | null }
+    >
   >({})
   const check = useMutation({
     mutationFn: (input: { id: string; featureKey: string; subject: string }) =>
@@ -709,7 +792,7 @@ function EntitlementsTab({ teamId }: { teamId: string }) {
                       {feature.key}
                     </TableCell>
                     <TableCell>{feature.name}</TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {feature.meterSlug ?? "—"}
                     </TableCell>
                   </TableRow>
@@ -827,7 +910,7 @@ function EntitlementsTab({ teamId }: { teamId: string }) {
                               setExpandedGrants((previous) =>
                                 previous === entitlement.id
                                   ? null
-                                  : entitlement.id,
+                                  : entitlement.id
                               )
                             }
                           >

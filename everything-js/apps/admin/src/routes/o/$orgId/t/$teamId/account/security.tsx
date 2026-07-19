@@ -4,8 +4,18 @@ import { QRCodeSVG } from "qrcode.react"
 
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
-import { Card, CardContent } from "@open-context/ui/components/card"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@open-context/ui/components/card"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 
@@ -73,16 +83,17 @@ function SecurityPage() {
 
   return (
     <Card>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium">Two-factor authentication</h2>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          Two-factor authentication
           {twoFactorEnabled ? (
             <Badge>Enabled</Badge>
           ) : (
             <Badge variant="secondary">Off</Badge>
           )}
-        </div>
-
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
         {/* Enabled → offer disable */}
         {twoFactorEnabled && !setup && (
           <form onSubmit={onDisable} className="max-w-sm">
@@ -101,7 +112,7 @@ function SecurityPage() {
                   required
                 />
               </Field>
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <Button
                   type="submit"
@@ -134,7 +145,7 @@ function SecurityPage() {
                   required
                 />
               </Field>
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <Button type="submit" disabled={loading || !password}>
                   Enable two-factor
@@ -182,7 +193,7 @@ function SecurityPage() {
                     required
                   />
                 </Field>
-                {error && <p className="text-destructive text-sm">{error}</p>}
+                {error && <FieldError>{error}</FieldError>}
                 <Field>
                   <Button type="submit" disabled={loading || !code}>
                     Confirm

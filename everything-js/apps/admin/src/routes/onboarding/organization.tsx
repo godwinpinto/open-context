@@ -10,8 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@open-context/ui/components/card"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { authClient } from "@/lib/auth/client"
 import { getCanCreateOrganization } from "@/lib/auth/organization"
 import { getServerSession } from "@/lib/auth/session"
@@ -107,10 +113,11 @@ function CreateOrganizationPage() {
                   required
                 />
               </Field>
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <Button type="submit" disabled={loading}>
-                  {loading ? "Creating…" : "Create organization"}
+                  {loading ? <Spinner data-icon="inline-start" /> : null}
+                  Create organization
                 </Button>
               </Field>
             </FieldGroup>

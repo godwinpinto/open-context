@@ -18,6 +18,7 @@ import {
   FieldLabel,
 } from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { authClient } from "@/lib/auth/client"
 
 type Mode = "sign-in" | "sign-up"
@@ -119,11 +120,8 @@ export function LoginForm({
               )}
               <Field>
                 <Button type="submit" disabled={loading}>
-                  {loading
-                    ? "Please wait…"
-                    : mode === "sign-in"
-                      ? "Login"
-                      : "Create account"}
+                  {loading ? <Spinner data-icon="inline-start" /> : null}
+                  {mode === "sign-in" ? "Login" : "Create account"}
                 </Button>
                 <FieldDescription className="text-center">
                   {mode === "sign-in" ? (

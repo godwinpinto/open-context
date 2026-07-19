@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { PlusIcon } from "lucide-react"
 
 import {
   AlertDialog,
@@ -26,8 +27,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { authClient } from "@/lib/auth/client"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
@@ -124,7 +137,12 @@ function RolesPage() {
         <RoleDialog
           organizationId={organization.id}
           onSaved={invalidateRoles}
-          trigger={<Button>New role</Button>}
+          trigger={
+            <Button>
+              <PlusIcon data-icon="inline-start" />
+              New role
+            </Button>
+          }
         />
       </div>
 
@@ -152,9 +170,14 @@ function RolesPage() {
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
           {rolesQuery.data?.length === 0 && (
-            <p className="text-muted-foreground text-sm">
-              No custom roles yet.
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No custom roles yet</EmptyTitle>
+                <EmptyDescription>
+                  Create one to grant members a tailored set of permissions.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           )}
           {rolesQuery.data?.map((role) => (
             <div key={role.role} className="flex items-center justify-between">
@@ -333,11 +356,12 @@ function RoleDialog({
                 ))}
               </div>
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving…" : "Save role"}
+              {loading ? <Spinner data-icon="inline-start" /> : null}
+              Save role
             </Button>
           </DialogFooter>
         </form>

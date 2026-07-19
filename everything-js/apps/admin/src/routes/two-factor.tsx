@@ -10,7 +10,12 @@ import {
   CardTitle,
 } from "@open-context/ui/components/card"
 import { Checkbox } from "@open-context/ui/components/checkbox"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import { authClient } from "@/lib/auth/client"
 
@@ -91,7 +96,7 @@ function TwoFactorPage() {
                   Trust this device for 30 days
                 </FieldLabel>
               </Field>
-              {error && <p className="text-destructive text-sm">{error}</p>}
+              {error && <FieldError>{error}</FieldError>}
               <Field>
                 <Button type="submit" disabled={loading || !code.trim()}>
                   Verify

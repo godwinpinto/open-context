@@ -2,13 +2,14 @@ import { Link, useParams } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@open-context/ui/components/badge"
+import { Card, CardContent } from "@open-context/ui/components/card"
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@open-context/ui/components/card"
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
 import {
   Table,
   TableBody,
@@ -54,22 +55,22 @@ export default function TrailPage({ teamId }: { teamId: string }) {
       </div>
 
       {events.length === 0 && !eventsQuery.isLoading ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No events yet</CardTitle>
-            <CardDescription>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyTitle>No events yet</EmptyTitle>
+            <EmptyDescription>
               Send your first event with an API key scoped to this team:
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs">
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <pre className="bg-muted overflow-x-auto rounded-md p-3 text-left font-mono text-xs">
               {`curl -X POST ${window.location.origin}/api/trail/v1/capture \\
   -H "x-api-key: oc_sk_..." \\
   -H "Content-Type: application/json" \\
   -d '{"name": "signed_up", "distinctId": "user-42"}'`}
             </pre>
-          </CardContent>
-        </Card>
+          </EmptyContent>
+        </Empty>
       ) : (
         <Card>
           <CardContent>

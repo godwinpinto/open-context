@@ -493,7 +493,7 @@ export function AppSidebar({
                     {team.name}
                   </span>
                 </div>
-                <ChevronsUpDown className="ml-auto size-4 opacity-50" />
+                <ChevronsUpDown className="ml-auto opacity-50" />
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-(--anchor-width) min-w-56"

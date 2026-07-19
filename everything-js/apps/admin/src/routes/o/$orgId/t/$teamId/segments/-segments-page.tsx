@@ -1,6 +1,18 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { PlusIcon, UsersIcon } from "lucide-react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -13,11 +25,25 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import {
   Select,
@@ -26,6 +52,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@open-context/ui/components/select"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -103,10 +130,18 @@ export default function SegmentsPage({ teamId }: { teamId: string }) {
       <Card>
         <CardContent>
           {segments.length === 0 && !segmentsQuery.isLoading ? (
-            <p className="text-muted-foreground text-sm">
-              No segments yet. Create a dynamic segment from identity
-              properties, or a manual one from a list of identity keys.
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <UsersIcon />
+                </EmptyMedia>
+                <EmptyTitle>No segments yet</EmptyTitle>
+                <EmptyDescription>
+                  Create a dynamic segment from identity properties, or a
+                  manual one from a list of identity keys.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
@@ -198,9 +233,26 @@ function DeleteButton({
     onSuccess: onDeleted,
   })
   return (
-    <Button variant="ghost" size="sm" onClick={() => remove.mutate()}>
-      Delete
-    </Button>
+    <AlertDialog>
+      <AlertDialogTrigger render={<Button variant="ghost" size="sm" />}>
+        Delete
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {segmentKey}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            The segment and its membership are removed, and anything filtering
+            by it stops matching.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }
 
@@ -266,10 +318,17 @@ function CreateSegmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>New segment</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon data-icon="inline-start" />
+        New segment
+      </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create segment</DialogTitle>
+          <DialogDescription>
+            Dynamic segments match rules over identity properties; manual
+            segments are hand-picked lists.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(event) => {
@@ -410,9 +469,9 @@ function CreateSegmentDialog({
                           />
                           {condition.operator === "regex" &&
                             regexError(condition.value) && (
-                              <p className="text-destructive text-xs">
+                              <FieldError>
                                 {regexError(condition.value)}
-                              </p>
+                              </FieldError>
                             )}
                         </div>
                       )}
@@ -443,23 +502,24 @@ function CreateSegmentDialog({
               </>
             )}
 
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            <Field>
-              <Button
-                type="submit"
-                disabled={
-                  create.isPending ||
-                  !key ||
-                  !name ||
-                  conditions.some(
-                    (c) => c.operator === "regex" && !!regexError(c.value),
-                  )
-                }
-              >
-                Create
-              </Button>
-            </Field>
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
+          <DialogFooter>
+            <Button
+              type="submit"
+              disabled={
+                create.isPending ||
+                !key ||
+                !name ||
+                conditions.some(
+                  (c) => c.operator === "regex" && !!regexError(c.value),
+                )
+              }
+            >
+              {create.isPending ? <Spinner data-icon="inline-start" /> : null}
+              Create
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
@@ -541,28 +601,30 @@ function SegmentDetail({
           </div>
         )}
 
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Member</TableHead>
-              <TableHead>Properties</TableHead>
-              {type === "manual" && (
-                <TableHead className="text-right">Actions</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {members.length === 0 ? (
+        {members.length === 0 ? (
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No members</EmptyTitle>
+              <EmptyDescription>
+                {type === "manual"
+                  ? "Add identity keys above to populate this segment."
+                  : "No identities match the rules right now."}
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Table>
+            <TableHeader>
               <TableRow>
-                <TableCell
-                  colSpan={type === "manual" ? 3 : 2}
-                  className="text-muted-foreground"
-                >
-                  No members.
-                </TableCell>
+                <TableHead>Member</TableHead>
+                <TableHead>Properties</TableHead>
+                {type === "manual" && (
+                  <TableHead className="text-right">Actions</TableHead>
+                )}
               </TableRow>
-            ) : (
-              members.map((member) => (
+            </TableHeader>
+            <TableBody>
+              {members.map((member) => (
                 <TableRow key={member.key}>
                   <TableCell className="font-mono font-medium">
                     {member.key}
@@ -585,10 +647,10 @@ function SegmentDetail({
                     </TableCell>
                   )}
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableBody>
+          </Table>
+        )}
 
         <div className="flex flex-col gap-2 border-t pt-4">
           <p className="text-sm font-medium">Test an identity</p>

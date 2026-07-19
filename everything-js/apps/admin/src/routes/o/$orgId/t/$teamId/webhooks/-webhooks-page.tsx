@@ -1,6 +1,18 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { PlusIcon, WebhookIcon } from "lucide-react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -13,12 +25,22 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
   Field,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "@open-context/ui/components/field"
@@ -30,6 +52,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@open-context/ui/components/select"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -123,8 +146,8 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
           <h1 className="text-lg font-semibold">Webhooks</h1>
           <p className="text-muted-foreground text-sm">
             Signed deliveries (Standard Webhooks) to your customers&apos;
@@ -137,102 +160,132 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
             onClick={() => deliverNow.mutate()}
             disabled={deliverNow.isPending}
           >
-            {deliverNow.isPending ? "Delivering…" : "Deliver due now"}
+            {deliverNow.isPending ? <Spinner data-icon="inline-start" /> : null}
+            Deliver due now
           </Button>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger
-              render={(props) => <Button {...props}>Add endpoint</Button>}
+              render={(props) => (
+                <Button {...props}>
+                  <PlusIcon data-icon="inline-start" />
+                  Add endpoint
+                </Button>
+              )}
             />
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add webhook endpoint</DialogTitle>
-              </DialogHeader>
               {createdSecret ? (
-                <div className="space-y-3">
-                  <p className="text-sm">
-                    Endpoint created. Its signing secret (retrievable later
-                    from this table&apos;s Rotate action):
-                  </p>
-                  <code className="bg-muted block break-all rounded p-2 text-xs">
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Endpoint created</DialogTitle>
+                    <DialogDescription>
+                      Its signing secret is shown below — retrievable later from
+                      this table&apos;s Rotate action.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <code className="bg-muted block break-all rounded-md p-2 font-mono text-xs">
                     {createdSecret}
                   </code>
-                  <Button
-                    onClick={() => {
-                      setCreatedSecret(null)
-                      setCreateOpen(false)
-                    }}
-                  >
-                    Done
-                  </Button>
-                </div>
-              ) : (
-                <FieldGroup>
-                  <Field>
-                    <FieldLabel>Owner</FieldLabel>
-                    <Select
-                      value={ownerType}
-                      onValueChange={(value) =>
-                        setOwnerType(value as typeof ownerType)
-                      }
+                  <DialogFooter>
+                    <Button
+                      onClick={() => {
+                        setCreatedSecret(null)
+                        setCreateOpen(false)
+                      }}
                     >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="identity">
-                          Identity (a customer)
-                        </SelectItem>
-                        <SelectItem value="group">Group</SelectItem>
-                        <SelectItem value="team">
-                          Team (platform notifications)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-                  {ownerType !== "team" ? (
+                      Done
+                    </Button>
+                  </DialogFooter>
+                </>
+              ) : (
+                <>
+                  <DialogHeader>
+                    <DialogTitle>Add webhook endpoint</DialogTitle>
+                    <DialogDescription>
+                      Deliveries to this URL are signed with a per-endpoint
+                      secret.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <FieldGroup>
                     <Field>
-                      <FieldLabel>
-                        {ownerType === "identity" ? "Identity key" : "Group key"}
-                      </FieldLabel>
+                      <FieldLabel htmlFor="webhook-owner-type">Owner</FieldLabel>
+                      <Select
+                        value={ownerType}
+                        onValueChange={(value) =>
+                          setOwnerType(value as typeof ownerType)
+                        }
+                      >
+                        <SelectTrigger id="webhook-owner-type">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="identity">
+                            Identity (a customer)
+                          </SelectItem>
+                          <SelectItem value="group">Group</SelectItem>
+                          <SelectItem value="team">
+                            Team (platform notifications)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </Field>
+                    {ownerType !== "team" ? (
+                      <Field>
+                        <FieldLabel htmlFor="webhook-owner-key">
+                          {ownerType === "identity"
+                            ? "Identity key"
+                            : "Group key"}
+                        </FieldLabel>
+                        <Input
+                          id="webhook-owner-key"
+                          value={ownerKey}
+                          onChange={(event) => setOwnerKey(event.target.value)}
+                          placeholder="user-42"
+                        />
+                      </Field>
+                    ) : null}
+                    <Field>
+                      <FieldLabel htmlFor="webhook-url">URL</FieldLabel>
                       <Input
-                        value={ownerKey}
-                        onChange={(event) => setOwnerKey(event.target.value)}
-                        placeholder="user-42"
+                        id="webhook-url"
+                        type="url"
+                        value={url}
+                        onChange={(event) => setUrl(event.target.value)}
+                        placeholder="https://example.com/webhooks"
                       />
                     </Field>
-                  ) : null}
-                  <Field>
-                    <FieldLabel>URL</FieldLabel>
-                    <Input
-                      value={url}
-                      onChange={(event) => setUrl(event.target.value)}
-                      placeholder="https://example.com/webhooks"
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel>Event types (optional, comma-separated)</FieldLabel>
-                    <Input
-                      value={eventTypesCsv}
-                      onChange={(event) => setEventTypesCsv(event.target.value)}
-                      placeholder="invoice.paid, user.created"
-                    />
-                  </Field>
-                  <Button
-                    onClick={() => createEndpoint.mutate()}
-                    disabled={
-                      createEndpoint.isPending ||
-                      !url ||
-                      (ownerType !== "team" && !ownerKey)
-                    }
-                  >
-                    {createEndpoint.isPending ? "Creating…" : "Create"}
-                  </Button>
-                  {createEndpoint.error ? (
-                    <p className="text-destructive text-sm">
-                      {createEndpoint.error.message}
-                    </p>
-                  ) : null}
-                </FieldGroup>
+                    <Field>
+                      <FieldLabel htmlFor="webhook-event-types">
+                        Event types (optional, comma-separated)
+                      </FieldLabel>
+                      <Input
+                        id="webhook-event-types"
+                        value={eventTypesCsv}
+                        onChange={(event) =>
+                          setEventTypesCsv(event.target.value)
+                        }
+                        placeholder="invoice.paid, user.created"
+                      />
+                    </Field>
+                    {createEndpoint.error ? (
+                      <FieldError>{createEndpoint.error.message}</FieldError>
+                    ) : null}
+                  </FieldGroup>
+                  <DialogFooter>
+                    <Button
+                      onClick={() => createEndpoint.mutate()}
+                      disabled={
+                        createEndpoint.isPending ||
+                        !url ||
+                        (ownerType !== "team" && !ownerKey)
+                      }
+                    >
+                      {createEndpoint.isPending ? (
+                        <Spinner data-icon="inline-start" />
+                      ) : null}
+                      Create
+                    </Button>
+                  </DialogFooter>
+                </>
               )}
             </DialogContent>
           </Dialog>
@@ -248,32 +301,38 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
         </CardHeader>
         <CardContent>
           {rotatedSecret ? (
-            <div className="mb-4 space-y-1">
+            <div className="mb-4 flex flex-col gap-1">
               <p className="text-sm font-medium">New signing secret:</p>
-              <code className="bg-muted block break-all rounded p-2 text-xs">
+              <code className="bg-muted block break-all rounded-md p-2 font-mono text-xs">
                 {rotatedSecret}
               </code>
             </div>
           ) : null}
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Owner</TableHead>
-                <TableHead>URL</TableHead>
-                <TableHead>Events</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {endpoints.length === 0 ? (
+          {endpoints.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <WebhookIcon />
+                </EmptyMedia>
+                <EmptyTitle>No endpoints yet</EmptyTitle>
+                <EmptyDescription>
+                  Add an endpoint to start receiving signed deliveries.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-muted-foreground">
-                    No endpoints yet.
-                  </TableCell>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>URL</TableHead>
+                  <TableHead>Events</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                endpoints.map((endpoint) => (
+              </TableHeader>
+              <TableBody>
+                {endpoints.map((endpoint) => (
                   <TableRow key={endpoint.id}>
                     <TableCell className="font-mono text-xs">
                       {endpoint.ownerType === "team"
@@ -298,39 +357,69 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
                         <Badge variant="secondary">Active</Badge>
                       )}
                     </TableCell>
-                    <TableCell className="space-x-1 text-right">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() =>
-                          setDisabled.mutate({
-                            id: endpoint.id,
-                            disabled: !endpoint.disabled,
-                          })
-                        }
-                      >
-                        {endpoint.disabled ? "Enable" : "Disable"}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => rotateSecret.mutate(endpoint.id)}
-                      >
-                        Rotate
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => deleteEndpoint.mutate(endpoint.id)}
-                      >
-                        Delete
-                      </Button>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setDisabled.mutate({
+                              id: endpoint.id,
+                              disabled: !endpoint.disabled,
+                            })
+                          }
+                        >
+                          {endpoint.disabled ? "Enable" : "Disable"}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => rotateSecret.mutate(endpoint.id)}
+                        >
+                          Rotate
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger
+                            render={(props) => (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                {...props}
+                              >
+                                Delete
+                              </Button>
+                            )}
+                          />
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete this endpoint?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Pending deliveries to it are cancelled and its
+                                signing secret is destroyed. This cannot be
+                                undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  deleteEndpoint.mutate(endpoint.id)
+                                }
+                              >
+                                Delete endpoint
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
 
@@ -342,27 +431,30 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Event</TableHead>
-                <TableHead>Owner</TableHead>
-                <TableHead>Endpoint</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>HTTP</TableHead>
-                <TableHead>Tries</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {messages.length === 0 ? (
+          {messages.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No messages yet</EmptyTitle>
+                <EmptyDescription>
+                  Deliveries show up here as soon as events are published.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
-                    No messages yet.
-                  </TableCell>
+                  <TableHead>Event</TableHead>
+                  <TableHead>Owner</TableHead>
+                  <TableHead>Endpoint</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>HTTP</TableHead>
+                  <TableHead>Tries</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ) : (
-                messages.flatMap((message) => {
+              </TableHeader>
+              <TableBody>
+                {messages.flatMap((message) => {
                   const messageAttempts = attempts.filter(
                     (attempt) => attempt.messageId === message.id,
                   )
@@ -438,10 +530,10 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
                       </TableRow>
                     )
                   })
-                })
-              )}
-            </TableBody>
-          </Table>
+                })}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>

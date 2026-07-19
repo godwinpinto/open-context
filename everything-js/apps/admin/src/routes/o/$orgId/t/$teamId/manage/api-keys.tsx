@@ -1,7 +1,19 @@
 import { useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { KeyRoundIcon, PlusIcon } from "lucide-react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import { Card, CardContent } from "@open-context/ui/components/card"
@@ -9,12 +21,26 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -70,11 +96,18 @@ function ApiKeysPage() {
       <Card>
         <CardContent>
           {keys.length === 0 && !keysQuery.isLoading ? (
-            <p className="text-muted-foreground text-sm">
-              No API keys for this team yet. Keys authenticate SDKs, the CLI
-              and CI against the consumer APIs (Trail, Meter, Identity,
-              Experiments, Flags).
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <KeyRoundIcon />
+                </EmptyMedia>
+                <EmptyTitle>No API keys for this team yet</EmptyTitle>
+                <EmptyDescription>
+                  Keys authenticate SDKs, the CLI and CI against the consumer
+                  APIs (Trail, Meter, Identity, Experiments, Flags).
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
@@ -129,13 +162,32 @@ function ApiKeysPage() {
                           : "never"}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => revoke.mutate(key.id)}
-                        >
-                          Revoke
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger
+                            render={<Button variant="ghost" size="sm" />}
+                          >
+                            Revoke
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Revoke {key.name}?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Anything still using this key will stop
+                                authenticating immediately.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => revoke.mutate(key.id)}
+                              >
+                                Revoke
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   )
@@ -199,7 +251,10 @@ function CreateKeyDialog({
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogTrigger render={<Button size="sm" />}>New API key</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon data-icon="inline-start" />
+        New API key
+      </DialogTrigger>
       <DialogContent>
         {createdKey ? (
           <>
@@ -213,7 +268,7 @@ function CreateKeyDialog({
             <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs">
               {createdKey}
             </pre>
-            <div className="flex gap-2">
+            <DialogFooter>
               <Button
                 size="sm"
                 onClick={() => {
@@ -226,7 +281,7 @@ function CreateKeyDialog({
               <Button variant="outline" size="sm" onClick={() => close(false)}>
                 Done
               </Button>
-            </div>
+            </DialogFooter>
           </>
         ) : (
           <>
@@ -283,13 +338,16 @@ function CreateKeyDialog({
                     placeholder="90"
                   />
                 </Field>
-                {error && <p className="text-destructive text-sm">{error}</p>}
-                <Field>
-                  <Button type="submit" disabled={create.isPending || !name}>
-                    Create
-                  </Button>
-                </Field>
+                {error && <FieldError>{error}</FieldError>}
               </FieldGroup>
+              <DialogFooter className="mt-4">
+                <Button type="submit" disabled={create.isPending || !name}>
+                  {create.isPending ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  Create
+                </Button>
+              </DialogFooter>
             </form>
           </>
         )}

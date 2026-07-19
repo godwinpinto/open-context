@@ -1,7 +1,9 @@
 import { useState } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link, useLocation } from "@tanstack/react-router"
-import { ChevronRight, Folder, LayoutDashboard } from "lucide-react"
+import { ChevronRightIcon, FolderIcon, LayoutDashboardIcon } from "lucide-react"
+
+import { cn } from "@open-context/ui/lib/utils"
 
 import {
   SidebarMenu,
@@ -62,7 +64,7 @@ export function DashboardsSidebarTree({
           render={link}
           tooltip={dashboard.name}
         >
-          <LayoutDashboard />
+          <LayoutDashboardIcon />
           <span>{dashboard.name}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -82,10 +84,13 @@ export function DashboardsSidebarTree({
                 setOpenGroups((current) => ({ ...current, [groupName]: !open }))
               }
             >
-              <Folder />
+              <FolderIcon />
               <span>{groupName}</span>
-              <ChevronRight
-                className={`ml-auto transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+              <ChevronRightIcon
+                className={cn(
+                  "ml-auto transition-transform duration-200",
+                  open && "rotate-90",
+                )}
               />
             </SidebarMenuButton>
             {open ? (

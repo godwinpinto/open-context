@@ -11,7 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@open-context/ui/components/card"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
 import { Skeleton } from "@open-context/ui/components/skeleton"
+import { Spinner } from "@open-context/ui/components/spinner"
 
 // Customer-facing portal: no session, no sidebar — a team's
 // END-CUSTOMER lands here with a short-lived portal token minted by
@@ -205,7 +212,7 @@ function WebhooksPanel({ token }: { token: string }) {
           are signed (Standard Webhooks).
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="flex flex-col gap-4">
         <div className="flex gap-2">
           <Input
             value={url}
@@ -216,14 +223,15 @@ function WebhooksPanel({ token }: { token: string }) {
             onClick={() => create.mutate()}
             disabled={create.isPending || !url}
           >
-            {create.isPending ? "Adding…" : "Add"}
+            {create.isPending ? <Spinner data-icon="inline-start" /> : null}
+            Add
           </Button>
         </div>
         {create.error ? (
           <p className="text-destructive text-sm">{create.error.message}</p>
         ) : null}
         {revealedSecret ? (
-          <div className="space-y-1">
+          <div className="flex flex-col gap-1">
             <p className="text-sm font-medium">Signing secret:</p>
             <code className="bg-muted block break-all rounded p-2 text-xs">
               {revealedSecret}
@@ -231,9 +239,16 @@ function WebhooksPanel({ token }: { token: string }) {
           </div>
         ) : null}
         {(endpoints.data?.endpoints ?? []).length === 0 ? (
-          <p className="text-muted-foreground text-sm">No endpoints yet.</p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No endpoints yet</EmptyTitle>
+              <EmptyDescription>
+                Add a URL above to start receiving deliveries.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             {endpoints.data!.endpoints.map((endpoint) => (
               <div
                 key={endpoint.id}
@@ -302,7 +317,7 @@ function EntitlementCard({
         </CardDescription>
       </CardHeader>
       {type === "metered" ? (
-        <CardContent className="space-y-3">
+        <CardContent className="flex flex-col gap-3">
           <div className="grid grid-cols-3 gap-2 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Used</p>

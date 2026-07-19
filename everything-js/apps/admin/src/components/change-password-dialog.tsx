@@ -10,8 +10,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { authClient } from "@/lib/auth/client"
 
 export function ChangePasswordDialog({
@@ -132,7 +138,7 @@ export function ChangePasswordDialog({
               />
               Sign out of other devices
             </label>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <FieldError errors={[{ message: error }]} />}
             {success && (
               <p className="text-sm text-emerald-600 dark:text-emerald-400">
                 Password changed.
@@ -141,7 +147,8 @@ export function ChangePasswordDialog({
           </FieldGroup>
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving…" : "Change password"}
+              {loading ? <Spinner data-icon="inline-start" /> : null}
+              Change password
             </Button>
           </DialogFooter>
         </form>

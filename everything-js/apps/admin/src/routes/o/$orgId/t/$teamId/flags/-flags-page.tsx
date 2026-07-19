@@ -1,6 +1,18 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { FlagIcon, PlusIcon } from "lucide-react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -13,11 +25,26 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import {
   Select,
@@ -26,6 +53,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@open-context/ui/components/select"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -118,40 +146,58 @@ export default function FlagsPage({ teamId }: { teamId: string }) {
 
       {environments.length === 0 && !environmentsQuery.isLoading ? (
         <Card>
-          <CardContent className="flex flex-col gap-3">
-            <p className="text-muted-foreground text-sm">
-              No environments yet. Create one to hold flag state — API keys
-              select their environment via metadata
-              (<code className="font-mono text-xs">{`{ "environment": "production" }`}</code>,
-              defaults to production).
-            </p>
-            <div className="flex items-end gap-2">
-              <Input
-                className="h-8 w-48"
-                placeholder="production"
-                value={newEnvKey}
-                onChange={(event) => setNewEnvKey(event.target.value)}
-              />
-              <Button
-                size="sm"
-                disabled={createEnvironment.isPending || !newEnvKey}
-                onClick={() => createEnvironment.mutate()}
-              >
-                Create environment
-              </Button>
-            </div>
+          <CardContent>
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No environments yet</EmptyTitle>
+                <EmptyDescription>
+                  Create one to hold flag state — API keys select their
+                  environment via metadata
+                  (<code className="font-mono text-xs">{`{ "environment": "production" }`}</code>,
+                  defaults to production).
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <div className="flex items-end gap-2">
+                  <Input
+                    className="h-8 w-48"
+                    placeholder="production"
+                    value={newEnvKey}
+                    onChange={(event) => setNewEnvKey(event.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    disabled={createEnvironment.isPending || !newEnvKey}
+                    onClick={() => createEnvironment.mutate()}
+                  >
+                    {createEnvironment.isPending ? (
+                      <Spinner data-icon="inline-start" />
+                    ) : null}
+                    Create environment
+                  </Button>
+                </div>
+              </EmptyContent>
+            </Empty>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardContent className="flex flex-col gap-4">
             {flags.length === 0 && !flagsQuery.isLoading ? (
-              <p className="text-muted-foreground text-sm">
-                No flags yet. Create one, then evaluate from your product via
-                <code className="bg-muted mx-1 rounded px-1 font-mono text-xs">
-                  POST /api/flags/v1/evaluate
-                </code>
-              </p>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <FlagIcon />
+                  </EmptyMedia>
+                  <EmptyTitle>No flags yet</EmptyTitle>
+                  <EmptyDescription>
+                    Create one, then evaluate from your product via
+                    <code className="bg-muted mx-1 rounded px-1 font-mono text-xs">
+                      POST /api/flags/v1/evaluate
+                    </code>
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             ) : (
               <Table>
                 <TableHeader>
@@ -203,13 +249,34 @@ export default function FlagsPage({ teamId }: { teamId: string }) {
                         >
                           {definition.enabled ? "Disable" : "Enable"}
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeFlag.mutate(definition.key)}
-                        >
-                          Delete
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger
+                            render={<Button variant="ghost" size="sm" />}
+                          >
+                            Delete
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete {definition.key}?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                The flag and its overrides in every environment
+                                are removed, and evaluations stop returning it.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  removeFlag.mutate(definition.key)
+                                }
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -229,6 +296,9 @@ export default function FlagsPage({ teamId }: { teamId: string }) {
                 disabled={createEnvironment.isPending || !newEnvKey}
                 onClick={() => createEnvironment.mutate()}
               >
+                {createEnvironment.isPending ? (
+                  <Spinner data-icon="inline-start" />
+                ) : null}
                 Add environment
               </Button>
             </div>
@@ -277,10 +347,16 @@ function CreateFlagDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>New flag</DialogTrigger>
+      <DialogTrigger render={<Button size="sm" />}>
+        <PlusIcon data-icon="inline-start" />
+        New flag
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create flag</DialogTitle>
+          <DialogDescription>
+            Flags are defined once per team and toggled per environment.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(event) => {
@@ -309,13 +385,14 @@ function CreateFlagDialog({
                 required
               />
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            <Field>
-              <Button type="submit" disabled={create.isPending || !key || !name}>
-                Create
-              </Button>
-            </Field>
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
+          <DialogFooter>
+            <Button type="submit" disabled={create.isPending || !key || !name}>
+              {create.isPending ? <Spinner data-icon="inline-start" /> : null}
+              Create
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

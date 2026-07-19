@@ -5,6 +5,12 @@ import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import { Card, CardContent } from "@open-context/ui/components/card"
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
   Table,
   TableBody,
   TableCell,
@@ -42,9 +48,14 @@ function ConnectedAppsPage() {
     <Card>
       <CardContent>
         {consents.length === 0 ? (
-          <p className="text-muted-foreground text-sm">
-            No applications have been granted access to your account.
-          </p>
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No connected apps</EmptyTitle>
+              <EmptyDescription>
+                No applications have been granted access to your account.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         ) : (
           <Table>
             <TableHeader>

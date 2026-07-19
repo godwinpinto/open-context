@@ -130,7 +130,7 @@ function SharedPanelBody({
       ),
   })
   if (dataQuery.isLoading || !dataQuery.data) {
-    return <Skeleton className="h-full w-full" />
+    return <Skeleton className="size-full" />
   }
   if (!dataQuery.data.ok) {
     return (

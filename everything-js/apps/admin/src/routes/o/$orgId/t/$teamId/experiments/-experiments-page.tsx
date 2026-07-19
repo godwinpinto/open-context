@@ -1,6 +1,19 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+import { PlusIcon } from "lucide-react"
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -13,11 +26,24 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
 import {
   Select,
@@ -26,6 +52,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@open-context/ui/components/select"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -68,7 +95,7 @@ export default function ExperimentsPage({ teamId }: { teamId: string }) {
       <div className="flex items-center">
         <div>
           <h1 className="text-lg font-medium">Experiments</h1>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-sm text-muted-foreground">
             A/B test features with real statistics.
           </p>
         </div>
@@ -80,18 +107,23 @@ export default function ExperimentsPage({ teamId }: { teamId: string }) {
       <Card>
         <CardContent>
           {experiments.length === 0 && !experimentsQuery.isLoading ? (
-            <p className="text-muted-foreground text-sm">
-              No experiments yet. Create one, start it, then assign variants
-              from your product via
-              <code className="bg-muted mx-1 rounded px-1 font-mono text-xs">
-                POST /api/experiments/v1/assign
-              </code>
-              and report conversions via
-              <code className="bg-muted mx-1 rounded px-1 font-mono text-xs">
-                POST /api/experiments/v1/goal
-              </code>
-              .
-            </p>
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No experiments yet</EmptyTitle>
+                <EmptyDescription>
+                  Create one, start it, then assign variants from your product
+                  via
+                  <code className="mx-1 rounded bg-muted px-1 font-mono text-xs">
+                    POST /api/experiments/v1/assign
+                  </code>
+                  and report conversions via
+                  <code className="mx-1 rounded bg-muted px-1 font-mono text-xs">
+                    POST /api/experiments/v1/goal
+                  </code>
+                  .
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
@@ -126,12 +158,12 @@ export default function ExperimentsPage({ teamId }: { teamId: string }) {
                         {experiment.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {experiment.variants
                         .map((variant) => `${variant.key}:${variant.weight}`)
                         .join(" / ")}
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
+                    <TableCell className="font-mono text-xs text-muted-foreground">
                       {experiment.segmentKey ?? "everyone"}
                     </TableCell>
                     <TableCell
@@ -165,13 +197,34 @@ export default function ExperimentsPage({ teamId }: { teamId: string }) {
                           Stop
                         </Button>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => remove.mutate(experiment.key)}
-                      >
-                        Delete
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger
+                          render={(props) => (
+                            <Button variant="ghost" size="sm" {...props}>
+                              Delete
+                            </Button>
+                          )}
+                        />
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Delete &quot;{experiment.key}&quot;?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              The experiment and its assignments and results are
+                              deleted; this cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => remove.mutate(experiment.key)}
+                            >
+                              Delete experiment
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -181,7 +234,9 @@ export default function ExperimentsPage({ teamId }: { teamId: string }) {
         </CardContent>
       </Card>
 
-      {selectedKey && <ResultsCard teamId={teamId} experimentKey={selectedKey} />}
+      {selectedKey && (
+        <ResultsCard teamId={teamId} experimentKey={selectedKey} />
+      )}
     </div>
   )
 }
@@ -239,10 +294,21 @@ function CreateExperimentDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" />}>New experiment</DialogTrigger>
+      <DialogTrigger
+        render={(props) => (
+          <Button size="sm" {...props}>
+            <PlusIcon data-icon="inline-start" />
+            New experiment
+          </Button>
+        )}
+      />
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create experiment</DialogTitle>
+          <DialogDescription>
+            Define the variants and their relative weights; the experiment
+            starts as a draft.
+          </DialogDescription>
         </DialogHeader>
         <form
           onSubmit={(event) => {
@@ -285,12 +351,14 @@ function CreateExperimentDialog({
               />
             </Field>
             <Field>
-              <FieldLabel>Target segment (optional)</FieldLabel>
+              <FieldLabel htmlFor="exp-segment">
+                Target segment (optional)
+              </FieldLabel>
               <Select
                 value={segmentKey}
                 onValueChange={(value) => setSegmentKey(value ?? "")}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger id="exp-segment" className="w-full">
                   <SelectValue placeholder="everyone" />
                 </SelectTrigger>
                 <SelectContent>
@@ -305,7 +373,7 @@ function CreateExperimentDialog({
             <Field>
               <FieldLabel>
                 Variants{" "}
-                <span className="text-muted-foreground font-normal">
+                <span className="font-normal text-muted-foreground">
                   (first is control; relative weights)
                 </span>
               </FieldLabel>
@@ -318,8 +386,8 @@ function CreateExperimentDialog({
                     onChange={(event) =>
                       setVariants((previous) =>
                         previous.map((v, i) =>
-                          i === index ? { ...v, key: event.target.value } : v,
-                        ),
+                          i === index ? { ...v, key: event.target.value } : v
+                        )
                       )
                     }
                   />
@@ -331,10 +399,8 @@ function CreateExperimentDialog({
                     onChange={(event) =>
                       setVariants((previous) =>
                         previous.map((v, i) =>
-                          i === index
-                            ? { ...v, weight: event.target.value }
-                            : v,
-                        ),
+                          i === index ? { ...v, weight: event.target.value } : v
+                        )
                       )
                     }
                   />
@@ -355,13 +421,14 @@ function CreateExperimentDialog({
                 Add variant
               </Button>
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
-            <Field>
-              <Button type="submit" disabled={create.isPending || !key || !name}>
-                Create
-              </Button>
-            </Field>
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
+          <DialogFooter>
+            <Button type="submit" disabled={create.isPending || !key || !name}>
+              {create.isPending ? <Spinner data-icon="inline-start" /> : null}
+              Create
+            </Button>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
@@ -417,7 +484,9 @@ function ResultsCard({
               <TableHead className="text-right">Conversions</TableHead>
               <TableHead className="text-right">Rate</TableHead>
               <TableHead className="text-right">Uplift</TableHead>
-              <TableHead className="text-right">Chance to beat control</TableHead>
+              <TableHead className="text-right">
+                Chance to beat control
+              </TableHead>
               <TableHead className="text-right">p-value</TableHead>
             </TableRow>
           </TableHeader>

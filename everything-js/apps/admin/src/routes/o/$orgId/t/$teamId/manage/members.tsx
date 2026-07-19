@@ -1,7 +1,19 @@
 import { useState } from "react"
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { PlusIcon } from "lucide-react"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
@@ -15,8 +27,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Select,
   SelectContent,
@@ -222,13 +240,32 @@ function MembersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       {!isOwner && !isSelf && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeMember.mutate(member.id)}
-                        >
-                          Remove
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger
+                            render={<Button variant="ghost" size="sm" />}
+                          >
+                            Remove
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Remove {member.user.name}?
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                They lose access to this organization and all
+                                its teams.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => removeMember.mutate(member.id)}
+                              >
+                                Remove
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       )}
                     </TableCell>
                   </TableRow>
@@ -321,7 +358,10 @@ function InviteMemberDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>Invite member</DialogTrigger>
+      <DialogTrigger render={<Button />}>
+        <PlusIcon data-icon="inline-start" />
+        Invite member
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Invite a member</DialogTitle>
@@ -362,11 +402,12 @@ function InviteMemberDialog({
                 </SelectContent>
               </Select>
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={loading}>
-              {loading ? "Sending…" : "Send invite"}
+              {loading ? <Spinner data-icon="inline-start" /> : null}
+              Send invite
             </Button>
           </DialogFooter>
         </form>

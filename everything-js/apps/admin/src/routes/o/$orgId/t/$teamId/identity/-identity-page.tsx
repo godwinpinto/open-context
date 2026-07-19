@@ -1,6 +1,17 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -10,6 +21,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@open-context/ui/components/card"
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
 import { Input } from "@open-context/ui/components/input"
 import {
   Table,
@@ -99,17 +117,21 @@ function IdentitiesTab({
             onChange={(event) => setSearch(event.target.value)}
           />
           {identities.length === 0 && !identitiesQuery.isLoading ? (
-            <div className="flex flex-col gap-2">
-              <p className="text-muted-foreground text-sm">
-                No identities yet. Identify one with an API key scoped to this
-                team:
-              </p>
-              <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs">
-                {`curl -X POST ${window.location.origin}/api/identity/v1/identify \\
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>No identities yet</EmptyTitle>
+                <EmptyDescription>
+                  Identify one with an API key scoped to this team:
+                </EmptyDescription>
+              </EmptyHeader>
+              <EmptyContent>
+                <pre className="bg-muted overflow-x-auto rounded-md p-3 text-left font-mono text-xs">
+                  {`curl -X POST ${window.location.origin}/api/identity/v1/identify \\
   -H "x-api-key: oc_sk_..." -H "Content-Type: application/json" \\
   -d '{"identity": "user-42", "set": {"plan": "pro"}, "setOnce": {"signup_date": "2026-07-19"}}'`}
-              </pre>
-            </div>
+                </pre>
+              </EmptyContent>
+            </Empty>
           ) : (
             <Table>
               <TableHeader>
@@ -153,14 +175,34 @@ function IdentitiesTab({
             <div className="flex items-center gap-2">
               <CardTitle className="font-mono">{detail.identity.key}</CardTitle>
               <Badge variant="secondary">{detail.identity.id.slice(0, 8)}…</Badge>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="ml-auto"
-                onClick={() => remove.mutate(selectedKey)}
-              >
-                Delete
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger
+                  render={
+                    <Button variant="ghost" size="sm" className="ml-auto" />
+                  }
+                >
+                  Delete
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Delete {detail.identity.key}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This removes the identity and its properties — it
+                      can&apos;t be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => remove.mutate(selectedKey)}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             <CardDescription>
               Merged view: group properties under identity properties —
@@ -212,20 +254,25 @@ function GroupsTab({ teamId }: { teamId: string }) {
     <Card>
       <CardContent>
         {groups.length === 0 && !groupsQuery.isLoading ? (
-          <div className="flex flex-col gap-2">
-            <p className="text-muted-foreground text-sm">
-              No groups yet. Create one and attach identities:
-            </p>
-            <pre className="bg-muted overflow-x-auto rounded-md p-3 font-mono text-xs">
-              {`curl -X POST ${window.location.origin}/api/identity/v1/group \\
+          <Empty>
+            <EmptyHeader>
+              <EmptyTitle>No groups yet</EmptyTitle>
+              <EmptyDescription>
+                Create one and attach identities:
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              <pre className="bg-muted overflow-x-auto rounded-md p-3 text-left font-mono text-xs">
+                {`curl -X POST ${window.location.origin}/api/identity/v1/group \\
   -H "x-api-key: oc_sk_..." -H "Content-Type: application/json" \\
   -d '{"group": "acme-corp", "set": {"tier": "enterprise"}}'
 
 curl -X POST ${window.location.origin}/api/identity/v1/attach \\
   -H "x-api-key: oc_sk_..." -H "Content-Type: application/json" \\
   -d '{"identity": "user-42", "group": "acme-corp"}'`}
-            </pre>
-          </div>
+              </pre>
+            </EmptyContent>
+          </Empty>
         ) : (
           <Table>
             <TableHeader>

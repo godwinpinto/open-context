@@ -4,8 +4,14 @@ import { createFileRoute, getRouteApi, useRouter } from "@tanstack/react-router"
 import { Avatar, AvatarFallback } from "@open-context/ui/components/avatar"
 import { Button } from "@open-context/ui/components/button"
 import { Card, CardContent } from "@open-context/ui/components/card"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { updateUserName } from "@/lib/auth/account"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
@@ -73,15 +79,14 @@ function ProfilePage() {
                 required
               />
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <FieldError>{error}</FieldError>}
             {success && (
-              <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                Saved.
-              </p>
+              <p className="text-muted-foreground text-sm">Saved.</p>
             )}
             <Field>
               <Button type="submit" disabled={loading || name === user.name}>
-                {loading ? "Saving…" : "Save changes"}
+                {loading ? <Spinner data-icon="inline-start" /> : null}
+                Save changes
               </Button>
             </Field>
           </FieldGroup>

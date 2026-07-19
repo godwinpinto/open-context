@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import GridLayout, { useContainerWidth, type Layout } from "react-grid-layout"
-import { MoreHorizontal, Pencil, X } from "lucide-react"
+import GridLayout, { useContainerWidth  } from "react-grid-layout"
+import type {Layout} from "react-grid-layout";
+import { CheckIcon, MoreHorizontalIcon, PencilIcon, XIcon } from "lucide-react"
 
 import "react-grid-layout/css/styles.css"
 import "react-resizable/css/styles.css"
@@ -24,18 +25,28 @@ import { Button } from "@open-context/ui/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@open-context/ui/components/dropdown-menu"
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
 import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyTitle,
+} from "@open-context/ui/components/empty"
+import {
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
 } from "@open-context/ui/components/field"
@@ -48,8 +59,10 @@ import {
   SelectValue,
 } from "@open-context/ui/components/select"
 import { Skeleton } from "@open-context/ui/components/skeleton"
+import { cn } from "@open-context/ui/lib/utils"
 import { PanelChart } from "@/components/panel-chart"
-import { TimeRangePicker, type TimeRange } from "@/components/time-range-picker"
+import { TimeRangePicker  } from "@/components/time-range-picker"
+import type {TimeRange} from "@/components/time-range-picker";
 import { dashboardsClient, rangeForKey } from "@/lib/modules/dashboards-client"
 
 type PanelMeta = {
@@ -189,18 +202,25 @@ export default function DashboardView({
             <DropdownMenu>
               <DropdownMenuTrigger
                 render={(props) => (
-                  <Button variant="outline" size="icon" {...props}>
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="Dashboard actions"
+                    {...props}
+                  >
+                    <MoreHorizontalIcon />
                   </Button>
                 )}
               />
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => setEditMode(true)}>
-                  Edit layout
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setShareOpen(true)}>
-                  Share…
-                </DropdownMenuItem>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onClick={() => setEditMode(true)}>
+                    Edit layout
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setShareOpen(true)}>
+                    Share…
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
@@ -208,8 +228,11 @@ export default function DashboardView({
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Share dashboard</DialogTitle>
+                <DialogDescription>
+                  Anyone with a link sees a read-only copy of this dashboard.
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center gap-2">
                   <Select
                     value={expiresInDays}
@@ -235,69 +258,20 @@ export default function DashboardView({
                 {shares.length === 0 ? (
                   <p className="text-muted-foreground text-sm">No links yet.</p>
                 ) : (
-                  <div className="space-y-2">
-                    {shares.map((share) => {
-                      const expired =
-                        share.expiresAt &&
-                        new Date(share.expiresAt).getTime() < Date.now()
-                      return (
-                        <div
-                          key={share.id}
-                          className="flex items-center justify-between gap-2 rounded-md border p-2"
-                        >
-                          <div className="min-w-0">
-                            <button
-                              type="button"
-                              className="block max-w-72 truncate text-left font-mono text-xs underline-offset-2 hover:underline"
-                              onClick={() =>
-                                navigator.clipboard.writeText(
-                                  `${window.location.origin}/share/d/${share.token}`,
-                                )
-                              }
-                              title="Copy link"
-                            >
-                              /share/d/{share.token}
-                            </button>
-                            <div className="mt-1 flex gap-1">
-                              {share.disabled ? (
-                                <Badge variant="destructive">Disabled</Badge>
-                              ) : expired ? (
-                                <Badge variant="destructive">Expired</Badge>
-                              ) : (
-                                <Badge variant="secondary">Active</Badge>
-                              )}
-                              {share.expiresAt ? (
-                                <span className="text-muted-foreground text-xs">
-                                  until{" "}
-                                  {new Date(share.expiresAt).toLocaleDateString()}
-                                </span>
-                              ) : null}
-                            </div>
-                          </div>
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
-                                setShareDisabled.mutate({
-                                  id: share.id,
-                                  disabled: !share.disabled,
-                                })
-                              }
-                            >
-                              {share.disabled ? "Enable" : "Disable"}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => deleteShare.mutate(share.id)}
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      )
-                    })}
+                  <div className="flex flex-col gap-2">
+                    {shares.map((share) => (
+                      <ShareRow
+                        key={share.id}
+                        share={share}
+                        onToggleDisabled={() =>
+                          setShareDisabled.mutate({
+                            id: share.id,
+                            disabled: !share.disabled,
+                          })
+                        }
+                        onDelete={() => deleteShare.mutate(share.id)}
+                      />
+                    ))}
                   </div>
                 )}
               </div>
@@ -316,11 +290,16 @@ export default function DashboardView({
       ) : null}
 
       {panels.length === 0 ? (
-        <div className="text-muted-foreground rounded-lg border border-dashed p-10 text-center text-sm">
-          No panels yet. Connect an MCP client and ask for the data you want —
-          e.g. &quot;add a panel to {dashboard.name} showing daily trail events
-          by name&quot;.
-        </div>
+        <Empty className="border">
+          <EmptyHeader>
+            <EmptyTitle>No panels yet</EmptyTitle>
+            <EmptyDescription>
+              Connect an MCP client and ask for the data you want — e.g.
+              &quot;add a panel to {dashboard.name} showing daily trail events
+              by name&quot;.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
       ) : (
         <div ref={containerRef}>
           <GridLayout
@@ -348,9 +327,10 @@ export default function DashboardView({
                 className="bg-card flex flex-col overflow-hidden rounded-lg border shadow-sm"
               >
                 <div
-                  className={`flex items-center justify-between gap-1 border-b px-3 py-1.5 ${
-                    editMode ? "panel-drag-handle cursor-move" : ""
-                  }`}
+                  className={cn(
+                    "flex items-center justify-between gap-1 border-b px-3 py-1.5",
+                    editMode && "panel-drag-handle cursor-move",
+                  )}
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{panel.title}</p>
@@ -372,13 +352,14 @@ export default function DashboardView({
                         <AlertDialogTrigger
                           render={(props) => (
                             <Button
-                              size="sm"
+                              size="icon-xs"
                               variant="ghost"
-                              className="text-muted-foreground hover:text-destructive h-6 w-6 p-0"
+                              aria-label={`Remove ${panel.title}`}
+                              className="text-muted-foreground"
                               onMouseDown={(event) => event.stopPropagation()}
                               {...props}
                             >
-                              <X className="h-3.5 w-3.5" />
+                              <XIcon />
                             </Button>
                           )}
                         />
@@ -418,6 +399,68 @@ export default function DashboardView({
   )
 }
 
+function ShareRow({
+  share,
+  onToggleDisabled,
+  onDelete,
+}: {
+  share: {
+    id: string
+    token: string
+    disabled: boolean
+    expiresAt: string | Date | null
+  }
+  onToggleDisabled: () => void
+  onDelete: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+  const expired =
+    share.expiresAt && new Date(share.expiresAt).getTime() < Date.now()
+  return (
+    <div className="flex items-center justify-between gap-2 rounded-md border p-2">
+      <div className="min-w-0">
+        <button
+          type="button"
+          className="flex max-w-72 items-center gap-1 text-left font-mono text-xs underline-offset-2 hover:underline"
+          onClick={() => {
+            void navigator.clipboard.writeText(
+              `${window.location.origin}/share/d/${share.token}`,
+            )
+            setCopied(true)
+            setTimeout(() => setCopied(false), 1500)
+          }}
+          title="Copy link"
+        >
+          <span className="truncate">/share/d/{share.token}</span>
+          {copied ? <CheckIcon className="size-3 shrink-0" /> : null}
+        </button>
+        <div className="mt-1 flex items-center gap-1">
+          {share.disabled ? (
+            <Badge variant="destructive">Disabled</Badge>
+          ) : expired ? (
+            <Badge variant="destructive">Expired</Badge>
+          ) : (
+            <Badge variant="secondary">Active</Badge>
+          )}
+          {share.expiresAt ? (
+            <span className="text-muted-foreground text-xs">
+              until {new Date(share.expiresAt).toLocaleDateString()}
+            </span>
+          ) : null}
+        </div>
+      </div>
+      <div className="flex gap-1">
+        <Button size="sm" variant="outline" onClick={onToggleDisabled}>
+          {share.disabled ? "Enable" : "Disable"}
+        </Button>
+        <Button size="sm" variant="destructive" onClick={onDelete}>
+          Delete
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 function PanelEditDialog({
   panel,
   onSave,
@@ -442,13 +485,14 @@ function PanelEditDialog({
       <DialogTrigger
         render={(props) => (
           <Button
-            size="sm"
+            size="icon-xs"
             variant="ghost"
-            className="text-muted-foreground h-6 w-6 p-0"
+            aria-label={`Edit ${panel.title}`}
+            className="text-muted-foreground"
             onMouseDown={(event) => event.stopPropagation()}
             {...props}
           >
-            <Pencil className="h-3 w-3" />
+            <PencilIcon />
           </Button>
         )}
       />
@@ -458,17 +502,28 @@ function PanelEditDialog({
         </DialogHeader>
         <FieldGroup>
           <Field>
-            <FieldLabel>Title</FieldLabel>
-            <Input value={title} onChange={(event) => setTitle(event.target.value)} />
-          </Field>
-          <Field>
-            <FieldLabel>Description</FieldLabel>
+            <FieldLabel htmlFor={`panel-title-${panel.id}`}>Title</FieldLabel>
             <Input
-              value={description}
-              onChange={(event) => setDescription(event.target.value)}
-              placeholder="Optional context shown under the title"
+              id={`panel-title-${panel.id}`}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
             />
           </Field>
+          <Field>
+            <FieldLabel htmlFor={`panel-description-${panel.id}`}>
+              Description
+            </FieldLabel>
+            <Input
+              id={`panel-description-${panel.id}`}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+            <FieldDescription>
+              Optional context shown under the title.
+            </FieldDescription>
+          </Field>
+        </FieldGroup>
+        <DialogFooter>
           <Button
             onClick={() => {
               onSave(title, description)
@@ -478,7 +533,7 @@ function PanelEditDialog({
           >
             Save
           </Button>
-        </FieldGroup>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

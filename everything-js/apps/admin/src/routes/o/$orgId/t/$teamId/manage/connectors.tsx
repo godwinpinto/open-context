@@ -2,6 +2,17 @@ import { useEffect, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@open-context/ui/components/alert-dialog"
 import { Badge } from "@open-context/ui/components/badge"
 import { Button } from "@open-context/ui/components/button"
 import {
@@ -200,14 +211,36 @@ function ConnectorsPage() {
                 Test & initialize
               </Button>
               {clickhouse && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={remove.isPending}
-                  onClick={() => remove.mutate()}
-                >
-                  Remove
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger
+                    render={
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={remove.isPending}
+                      />
+                    }
+                  >
+                    Remove
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Remove the ClickHouse connector?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This team's events go back to the built-in store and
+                        the saved credentials are deleted.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => remove.mutate()}>
+                        Remove
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             </Field>
           </FieldGroup>

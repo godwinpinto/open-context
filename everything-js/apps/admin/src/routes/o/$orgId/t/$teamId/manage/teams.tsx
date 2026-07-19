@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { createFileRoute, getRouteApi } from "@tanstack/react-router"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { PlusIcon } from "lucide-react"
 
 import { Badge } from "@open-context/ui/components/badge"
 import {
@@ -25,8 +26,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@open-context/ui/components/dialog"
-import { Field, FieldGroup, FieldLabel } from "@open-context/ui/components/field"
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@open-context/ui/components/field"
 import { Input } from "@open-context/ui/components/input"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Table,
   TableBody,
@@ -193,7 +200,10 @@ function CreateTeamDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button />}>New team</DialogTrigger>
+      <DialogTrigger render={<Button />}>
+        <PlusIcon data-icon="inline-start" />
+        New team
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create a team</DialogTitle>
@@ -213,11 +223,12 @@ function CreateTeamDialog({
                 required
               />
             </Field>
-            {error && <p className="text-destructive text-sm">{error}</p>}
+            {error && <FieldError>{error}</FieldError>}
           </FieldGroup>
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={loading}>
-              {loading ? "Creating…" : "Create team"}
+              {loading ? <Spinner data-icon="inline-start" /> : null}
+              Create team
             </Button>
           </DialogFooter>
         </form>

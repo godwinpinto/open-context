@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { CalendarRange, ChevronDown } from "lucide-react"
+import { CalendarRangeIcon, ChevronDownIcon } from "lucide-react"
 import type { DateRange } from "react-day-picker"
 
 import { Button } from "@open-context/ui/components/button"
@@ -68,9 +68,9 @@ export function TimeRangePicker({
         <PopoverTrigger
           render={(props) => (
             <Button variant="outline" size="sm" {...props}>
-              <CalendarRange className="h-3.5 w-3.5" />
+              <CalendarRangeIcon data-icon="inline-start" />
               {triggerLabel}
-              <ChevronDown className="h-3 w-3 opacity-60" />
+              <ChevronDownIcon data-icon="inline-end" className="opacity-60" />
             </Button>
           )}
         />
