@@ -1,6 +1,0 @@
-@import "tailwindcss";
-@import "@fontsource-variable/geist";
-@import "@open-context/ui/theme.css";
-
-/* Tailwind must scan the shared package's sources for class names. */
-@source "../../../packages/ui/src";

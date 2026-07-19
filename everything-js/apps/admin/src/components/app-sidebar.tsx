@@ -236,11 +236,12 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                {/* Trail is a separate worker on this hostname — full
-                    document navigation, so a plain anchor, not a Link. */}
                 <SidebarMenuButton
                   render={
-                    <a href={`/trail/o/${organization.id}/t/${team.id}`} />
+                    <Link
+                      to="/o/$orgId/t/$teamId/trail"
+                      params={{ orgId: organization.id, teamId: team.id }}
+                    />
                   }
                   tooltip="Trail"
                 >

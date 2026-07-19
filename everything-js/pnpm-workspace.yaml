@@ -1,6 +1,7 @@
 packages:
   - "apps/*"
   - "packages/*"
+  - "packages/modules/*"
 allowBuilds:
   '@prisma/client': false
   better-sqlite3: false

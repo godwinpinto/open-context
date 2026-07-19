@@ -1,5 +1,9 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
 
+// Module schema fragments — re-exported so drizzle-kit migrations and
+// the drizzle client cover module tables too.
+export { trailEvent } from "@open-context/module-trail/schema"
+
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

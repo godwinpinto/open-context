@@ -86,6 +86,9 @@ export function createAuth(env: Env) {
       apiKey({
         defaultPrefix: "oc_sk_",
         requireName: true,
+        // Keys carry { teamId } in metadata — module consumer APIs
+        // resolve their team scope from it (see lib/modules/trail.ts).
+        enableMetadata: true,
       }),
       // Lets the CLI (packages/cli) sign in via RFC 8628 device code flow,
       // then use the resulting session token as `Authorization: Bearer`.
