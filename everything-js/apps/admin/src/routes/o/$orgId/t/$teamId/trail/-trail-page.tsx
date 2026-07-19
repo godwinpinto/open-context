@@ -1,3 +1,4 @@
+import { Link, useParams } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@open-context/ui/components/badge"
@@ -22,6 +23,7 @@ import { trailClient } from "@/lib/modules/trail-client"
 // in the server bundle.
 export default function TrailPage({ teamId }: { teamId: string }) {
   const marker = "CSR_ONLY_TRAIL_PAGE_MARKER"
+  const { orgId } = useParams({ strict: false }) as { orgId: string }
 
   const eventsQuery = useQuery({
     queryKey: ["trail-events", teamId],
@@ -85,7 +87,20 @@ export default function TrailPage({ teamId }: { teamId: string }) {
                   <TableRow key={event.id}>
                     <TableCell className="font-medium">{event.name}</TableCell>
                     <TableCell className="text-muted-foreground">
-                      {event.distinctId ?? "—"}
+                      {event.distinctId ? (
+                        // distinctId IS an identity key — link into the
+                        // core Identity page.
+                        <Link
+                          to="/o/$orgId/t/$teamId/identity"
+                          params={{ orgId, teamId }}
+                          search={{ key: event.distinctId }}
+                          className="underline-offset-4 hover:underline"
+                        >
+                          {event.distinctId}
+                        </Link>
+                      ) : (
+                        "—"
+                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground max-w-64 truncate font-mono text-xs">
                       {event.properties

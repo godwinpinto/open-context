@@ -10,6 +10,7 @@ that contribute capabilities, not deployments.
 apps/
   admin/              The one deployed app: auth, org/team admin, all module UIs
 packages/
+  core/               @open-context/core — platform substrate (identity layer)
   ui/                 @open-context/ui — shadcn primitives + theme (shared shell)
   cli/                open-context CLI (device-code login, bearer auth)
   modules/
@@ -17,6 +18,31 @@ packages/
     meter/            @open-context/module-meter — usage metering + entitlements
   plugins/            (reserved)
 ```
+
+### Core identity layer
+
+Dependency rule: modules depend on core, never on each other. The
+first core concern is IDENTITY — who usage is about:
+
+- **Identity** = any principal the customer's product identifies
+  (person, service account, device), keyed by an immutable `key`.
+- **Group** = a set of identities with shared properties (Segment
+  group() / PostHog Groups).
+- IDs are deterministic `uuidv5(namespace, teamId + ":" + key)` —
+  computable anywhere (SDK, module, ClickHouse) without a lookup;
+  creation is idempotent. Tables: `oc_identity`, `oc_group`,
+  `oc_identity_group`.
+- Property ops: `set / setOnce / unset / increment` (negative =
+  decrement) — state, not usage (counting belongs to Meter), so
+  mutable rows with last-write-wins are intended semantics.
+- Consumer API: `/api/identity/v1/{identify,group,attach,identities/{key}}`.
+  Property resolution for consumers (flags evaluation etc.): group
+  properties merged under identity properties, identity wins; groups
+  merge in attachment order.
+- Modules reference identities loosely by (teamId, key): Trail's
+  `distinctId` and Meter's `subject` ARE identity keys — joins by
+  convention or by deriving the uuid, no FKs, and modules may import
+  `getMergedProperties` etc. from @open-context/core directly.
 
 ## The module pattern
 

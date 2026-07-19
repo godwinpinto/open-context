@@ -1,6 +1,7 @@
 import { useState } from "react"
 import {
   ChevronsUpDown,
+  Fingerprint,
   Footprints,
   Gauge,
   KeyRound,
@@ -53,6 +54,12 @@ const navItems = [
     to: "/o/$orgId/t/$teamId",
     icon: LayoutDashboard,
     exact: true,
+  },
+  {
+    title: "Identity",
+    to: "/o/$orgId/t/$teamId/identity",
+    icon: Fingerprint,
+    exact: false,
   },
   {
     title: "Manage",

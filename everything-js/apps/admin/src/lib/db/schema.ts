@@ -26,6 +26,14 @@ export const connector = sqliteTable(
   ],
 )
 
+// Core identity layer (identities + groups) — platform substrate all
+// modules reference by (teamId, key).
+export {
+  coreGroup,
+  coreIdentity,
+  coreIdentityGroup,
+} from "@open-context/core/schema"
+
 // Module schema fragments — re-exported so drizzle-kit migrations and
 // the drizzle client cover module tables too.
 export { trailEvent } from "@open-context/module-trail/schema"
