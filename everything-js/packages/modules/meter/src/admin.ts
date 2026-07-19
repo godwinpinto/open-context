@@ -117,7 +117,7 @@ const queryMeter = base
       groupBy = { name: input.groupBy, path }
     }
 
-    const rows = await context.storeFor(input.teamId).aggregate({
+    const rows = await (await context.storeFor(input.teamId)).aggregate({
       eventType: meterRow.eventType,
       aggregation: meterRow.aggregation as Aggregation,
       valueProperty: meterRow.valueProperty,
@@ -149,7 +149,7 @@ const listEvents = base
   )
   .handler(async ({ input, context }) => {
     await context.assertTeamAccess(input.teamId)
-    const events = await context.storeFor(input.teamId).list({
+    const events = await (await context.storeFor(input.teamId)).list({
       limit: input.limit,
       type: input.type,
       subject: input.subject,
@@ -407,7 +407,7 @@ const entitlementValue = base
     await context.assertTeamAccess(input.teamId)
     return computeEntitlementValue({
       db: context.db,
-      store: context.storeFor(input.teamId),
+      store: await context.storeFor(input.teamId),
       teamId: input.teamId,
       featureKey: input.featureKey,
       subject: input.subject,

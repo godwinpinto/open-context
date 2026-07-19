@@ -1,4 +1,30 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core"
+import {
+  sqliteTable,
+  text,
+  integer,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core"
+
+// Per-team external backends ("connectors"). config is a
+// symmetrically-encrypted JSON blob (better-auth crypto with the auth
+// secret) — credentials never sit in plaintext at rest and are never
+// returned by APIs after creation. One connector per type per team.
+export const connector = sqliteTable(
+  "connector",
+  {
+    id: text("id").primaryKey(),
+    teamId: text("team_id").notNull(),
+    // "clickhouse" for now; future: kafka, s3, ...
+    type: text("type").notNull(),
+    config: text("config").notNull(),
+    enabled: integer("enabled", { mode: "boolean" }).notNull().default(true),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+    updatedAt: integer("updated_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    uniqueIndex("connector_team_type_idx").on(table.teamId, table.type),
+  ],
+)
 
 // Module schema fragments — re-exported so drizzle-kit migrations and
 // the drizzle client cover module tables too.

@@ -9,6 +9,10 @@
 export { meterAdminRouter } from "./admin"
 export { meterConsumerRouter } from "./consumer"
 export { createD1EventStore } from "./store"
+export {
+  createClickHouseEventStore,
+  type ClickHouseStoreConfig,
+} from "./clickhouse"
 export type {
   Aggregation,
   AggregateRow,
