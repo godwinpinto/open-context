@@ -1,25 +1,15 @@
-import { createFileRoute, getRouteApi, Link, Outlet, useLocation } from "@tanstack/react-router"
-
-import { Tabs, TabsList, TabsTrigger } from "@open-context/ui/components/tabs"
+import { createFileRoute, getRouteApi, Outlet } from "@tanstack/react-router"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
 
-const TABS = [
-  { value: "profile", label: "Profile" },
-  { value: "connected-apps", label: "Connected apps" },
-  { value: "sessions", label: "Sessions" },
-  { value: "security", label: "Security" },
-] as const
-
+// Section navigation (Profile/Connected apps/Sessions/Security) lives
+// in the contextual sidebar.
 export const Route = createFileRoute("/o/$orgId/t/$teamId/account")({
   component: AccountLayout,
 })
 
 function AccountLayout() {
-  const { organization, team } = parentRoute.useLoaderData()
-  const { pathname } = useLocation()
-  const activeTab =
-    TABS.find((tab) => pathname.endsWith(`/${tab.value}`))?.value ?? "profile"
+  const { organization } = parentRoute.useLoaderData()
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,26 +19,6 @@ function AccountLayout() {
           Your personal account, not specific to {organization.name}
         </p>
       </div>
-
-      <Tabs value={activeTab}>
-        <TabsList>
-          {TABS.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              render={
-                <Link
-                  to={`/o/$orgId/t/$teamId/account/${tab.value}`}
-                  params={{ orgId: organization.id, teamId: team.id }}
-                />
-              }
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
       <Outlet />
     </div>
   )

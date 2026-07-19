@@ -34,7 +34,6 @@ import {
   TableHeader,
   TableRow,
 } from "@open-context/ui/components/table"
-import { Tabs, TabsList, TabsTrigger } from "@open-context/ui/components/tabs"
 import { meterClient } from "@/lib/modules/meter-client"
 
 const AGGREGATIONS = [
@@ -46,9 +45,15 @@ const AGGREGATIONS = [
   "max",
 ] as const
 
-export default function MeterPage({ teamId }: { teamId: string }) {
-  const [tab, setTab] = useState("meters")
-
+// Section navigation lives in the sidebar (contextual menu); the tab
+// arrives via the route's ?tab= search param.
+export default function MeterPage({
+  teamId,
+  tab,
+}: {
+  teamId: string
+  tab: string
+}) {
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -57,13 +62,6 @@ export default function MeterPage({ teamId }: { teamId: string }) {
           Usage metering and entitlements.
         </p>
       </div>
-      <Tabs value={tab} onValueChange={(value) => value && setTab(value)}>
-        <TabsList>
-          <TabsTrigger value="meters">Meters</TabsTrigger>
-          <TabsTrigger value="events">Events</TabsTrigger>
-          <TabsTrigger value="entitlements">Entitlements</TabsTrigger>
-        </TabsList>
-      </Tabs>
       {tab === "meters" && <MetersTab teamId={teamId} />}
       {tab === "events" && <EventsTab teamId={teamId} />}
       {tab === "entitlements" && <EntitlementsTab teamId={teamId} />}

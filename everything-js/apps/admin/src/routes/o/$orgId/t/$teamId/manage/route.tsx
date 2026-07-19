@@ -1,26 +1,15 @@
-import { createFileRoute, getRouteApi, Link, Outlet, useLocation } from "@tanstack/react-router"
-
-import { Tabs, TabsList, TabsTrigger } from "@open-context/ui/components/tabs"
+import { createFileRoute, getRouteApi, Outlet } from "@tanstack/react-router"
 
 const parentRoute = getRouteApi("/o/$orgId/t/$teamId")
 
-const TABS = [
-  { value: "members", label: "Members" },
-  { value: "teams", label: "Teams" },
-  { value: "roles", label: "Roles" },
-  { value: "connectors", label: "Connectors" },
-  { value: "api-keys", label: "API keys" },
-] as const
-
+// Section navigation (Members/Teams/Roles/Connectors/API keys) lives in
+// the contextual sidebar.
 export const Route = createFileRoute("/o/$orgId/t/$teamId/manage")({
   component: ManageLayout,
 })
 
 function ManageLayout() {
-  const { organization, team } = parentRoute.useLoaderData()
-  const { pathname } = useLocation()
-  const activeTab =
-    TABS.find((tab) => pathname.endsWith(`/${tab.value}`))?.value ?? "members"
+  const { organization } = parentRoute.useLoaderData()
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,26 +17,6 @@ function ManageLayout() {
         <h1 className="text-lg font-medium">Manage</h1>
         <p className="text-muted-foreground text-sm">{organization.name}</p>
       </div>
-
-      <Tabs value={activeTab}>
-        <TabsList>
-          {TABS.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              render={
-                <Link
-                  to={`/o/$orgId/t/$teamId/manage/${tab.value}`}
-                  params={{ orgId: organization.id, teamId: team.id }}
-                />
-              }
-            >
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
       <Outlet />
     </div>
   )

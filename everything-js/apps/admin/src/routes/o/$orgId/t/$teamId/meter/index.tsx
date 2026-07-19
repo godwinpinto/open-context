@@ -16,14 +16,24 @@ const MeterPage = lazy(() =>
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId/meter/")({
   ssr: false,
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { tab?: "meters" | "events" | "entitlements" } => ({
+    ...(search.tab === "meters" ||
+    search.tab === "events" ||
+    search.tab === "entitlements"
+      ? { tab: search.tab }
+      : {}),
+  }),
   component: MeterRoute,
 })
 
 function MeterRoute() {
   const { teamId } = Route.useParams()
+  const { tab } = Route.useSearch()
   return (
     <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-      <MeterPage teamId={teamId} />
+      <MeterPage teamId={teamId} tab={tab ?? "meters"} />
     </Suspense>
   )
 }

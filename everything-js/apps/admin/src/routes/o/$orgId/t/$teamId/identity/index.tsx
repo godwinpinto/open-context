@@ -16,18 +16,27 @@ const IdentityPage = lazy(() =>
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId/identity/")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>) => ({
-    key: typeof search.key === "string" ? search.key : undefined,
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { key?: string; tab?: "identities" | "groups" } => ({
+    ...(typeof search.key === "string" ? { key: search.key } : {}),
+    ...(search.tab === "groups" || search.tab === "identities"
+      ? { tab: search.tab }
+      : {}),
   }),
   component: IdentityRoute,
 })
 
 function IdentityRoute() {
   const { teamId } = Route.useParams()
-  const { key } = Route.useSearch()
+  const { key, tab } = Route.useSearch()
   return (
     <Suspense fallback={<Skeleton className="h-40 w-full" />}>
-      <IdentityPage teamId={teamId} initialKey={key} />
+      <IdentityPage
+        teamId={teamId}
+        initialKey={key}
+        tab={tab ?? "identities"}
+      />
     </Suspense>
   )
 }

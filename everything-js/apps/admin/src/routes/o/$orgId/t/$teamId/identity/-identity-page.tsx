@@ -19,18 +19,19 @@ import {
   TableHeader,
   TableRow,
 } from "@open-context/ui/components/table"
-import { Tabs, TabsList, TabsTrigger } from "@open-context/ui/components/tabs"
 import { identityClient } from "@/lib/modules/identity-client"
 
+// Section navigation lives in the sidebar (contextual menu); the tab
+// arrives via the route's ?tab= search param.
 export default function IdentityPage({
   teamId,
   initialKey,
+  tab,
 }: {
   teamId: string
   initialKey?: string
+  tab: string
 }) {
-  const [tab, setTab] = useState("identities")
-
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -39,12 +40,6 @@ export default function IdentityPage({
           Who your product's usage is about — identities and their groups.
         </p>
       </div>
-      <Tabs value={tab} onValueChange={(value) => value && setTab(value)}>
-        <TabsList>
-          <TabsTrigger value="identities">Identities</TabsTrigger>
-          <TabsTrigger value="groups">Groups</TabsTrigger>
-        </TabsList>
-      </Tabs>
       {tab === "identities" && (
         <IdentitiesTab teamId={teamId} initialKey={initialKey} />
       )}
