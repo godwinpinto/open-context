@@ -49,3 +49,11 @@ export type {
   IdentityAdminContext,
   IdentityConsumerContext,
 } from "./identity/context"
+
+// Portal tokens — stateless HMAC-signed, the 4th auth surface.
+export {
+  createPortalToken,
+  verifyPortalToken,
+  type PortalClaims,
+  type PortalScope,
+} from "./portal/tokens"

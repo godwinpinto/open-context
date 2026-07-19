@@ -7,6 +7,7 @@
 //   - admin router  (meters/features/entitlements CRUD, meter query)
 //   - consumer router (event ingest, entitlement value check, usage delta)
 export { meterAdminRouter } from "./admin"
+export { portalUsage } from "./portal"
 export { meterConsumerRouter } from "./consumer"
 export { createD1EventStore } from "./store"
 export {

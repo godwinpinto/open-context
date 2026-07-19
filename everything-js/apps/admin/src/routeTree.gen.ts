@@ -18,7 +18,9 @@ import { Route as DotwellKnownOauthAuthorizationServerRouteImport } from './rout
 import { Route as DotwellKnownOauthProtectedResourceRouteImport } from './routes/[.]well-known/oauth-protected-resource'
 import { Route as DotwellKnownOpenidConfigurationRouteImport } from './routes/[.]well-known/openid-configuration'
 import { Route as OnboardingOrganizationRouteImport } from './routes/onboarding/organization'
+import { Route as PortalIndexRouteImport } from './routes/portal/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiPortalSplatRouteImport } from './routes/api/portal/$'
 import { Route as DotwellKnownOauthAuthorizationServerApiAuthRouteImport } from './routes/[.]well-known/oauth-authorization-server/api/auth'
 import { Route as ApiExperimentsAdminSplatRouteImport } from './routes/api/experiments/admin/$'
 import { Route as ApiExperimentsV1SplatRouteImport } from './routes/api/experiments/v1/$'
@@ -101,9 +103,19 @@ const OnboardingOrganizationRoute = OnboardingOrganizationRouteImport.update({
   path: '/onboarding/organization',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PortalIndexRoute = PortalIndexRouteImport.update({
+  id: '/portal/',
+  path: '/portal/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPortalSplatRoute = ApiPortalSplatRouteImport.update({
+  id: '/api/portal/$',
+  path: '/api/portal/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DotwellKnownOauthAuthorizationServerApiAuthRoute =
@@ -300,7 +312,9 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/portal/$': typeof ApiPortalSplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
@@ -345,7 +359,9 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
+  '/portal': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/portal/$': typeof ApiPortalSplatRoute
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
@@ -388,7 +404,9 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof DotwellKnownOauthProtectedResourceRoute
   '/.well-known/openid-configuration': typeof DotwellKnownOpenidConfigurationRoute
   '/onboarding/organization': typeof OnboardingOrganizationRoute
+  '/portal/': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/portal/$': typeof ApiPortalSplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
@@ -435,7 +453,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
+    | '/portal/'
     | '/api/auth/$'
+    | '/api/portal/$'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
@@ -480,7 +500,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
+    | '/portal'
     | '/api/auth/$'
+    | '/api/portal/$'
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
@@ -522,7 +544,9 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/.well-known/openid-configuration'
     | '/onboarding/organization'
+    | '/portal/'
     | '/api/auth/$'
+    | '/api/portal/$'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
@@ -568,7 +592,9 @@ export interface RootRouteChildren {
   DotwellKnownOauthProtectedResourceRoute: typeof DotwellKnownOauthProtectedResourceRoute
   DotwellKnownOpenidConfigurationRoute: typeof DotwellKnownOpenidConfigurationRoute
   OnboardingOrganizationRoute: typeof OnboardingOrganizationRoute
+  PortalIndexRoute: typeof PortalIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiPortalSplatRoute: typeof ApiPortalSplatRoute
   OOrgIdTTeamIdRouteRoute: typeof OOrgIdTTeamIdRouteRouteWithChildren
   ApiExperimentsAdminSplatRoute: typeof ApiExperimentsAdminSplatRoute
   ApiExperimentsV1SplatRoute: typeof ApiExperimentsV1SplatRoute
@@ -648,11 +674,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingOrganizationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/portal/': {
+      id: '/portal/'
+      path: '/portal'
+      fullPath: '/portal/'
+      preLoaderRoute: typeof PortalIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/portal/$': {
+      id: '/api/portal/$'
+      path: '/api/portal/$'
+      fullPath: '/api/portal/$'
+      preLoaderRoute: typeof ApiPortalSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.well-known/oauth-authorization-server/api/auth': {
@@ -990,7 +1030,9 @@ const rootRouteChildren: RootRouteChildren = {
     DotwellKnownOauthProtectedResourceRoute,
   DotwellKnownOpenidConfigurationRoute: DotwellKnownOpenidConfigurationRoute,
   OnboardingOrganizationRoute: OnboardingOrganizationRoute,
+  PortalIndexRoute: PortalIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiPortalSplatRoute: ApiPortalSplatRoute,
   OOrgIdTTeamIdRouteRoute: OOrgIdTTeamIdRouteRouteWithChildren,
   ApiExperimentsAdminSplatRoute: ApiExperimentsAdminSplatRoute,
   ApiExperimentsV1SplatRoute: ApiExperimentsV1SplatRoute,

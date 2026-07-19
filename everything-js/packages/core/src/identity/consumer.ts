@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import type { IdentityConsumerContext } from "./context"
 import { identityInSegments } from "../segments/store"
+import { createPortalToken } from "../portal/tokens"
 import {
   attachIdentityToGroup,
   getMergedProperties,
@@ -84,9 +85,41 @@ const resolve = base
     return { ...merged, segments }
   })
 
+// POST /api/identity/v1/portal-tokens — the team's backend mints a
+// short-lived scoped token for THEIR logged-in customer; their
+// frontend then opens/embeds /portal?token=...
+const portalToken = base
+  .route({ method: "POST", path: "/portal-tokens" })
+  .input(
+    z.object({
+      identity: keySchema,
+      scopes: z
+        .array(z.enum(["meter:read", "webhooks:manage"]))
+        .min(1)
+        .max(4),
+      // 1 minute to 7 days; default 1 hour.
+      expiresInSeconds: z
+        .number()
+        .int()
+        .min(60)
+        .max(7 * 24 * 3600)
+        .default(3600),
+    }),
+  )
+  .handler(async ({ input, context }) => {
+    const token = await createPortalToken(context.portalSecret, {
+      teamId: context.teamId,
+      identity: input.identity,
+      scopes: input.scopes,
+      expiresInSeconds: input.expiresInSeconds,
+    })
+    return { token, path: `/portal?token=${encodeURIComponent(token)}` }
+  })
+
 export const identityConsumerRouter = {
   identify,
   group,
   attach,
   resolve,
+  portalToken,
 }

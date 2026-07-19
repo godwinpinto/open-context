@@ -50,7 +50,10 @@ export async function handleIdentityConsumer(request: Request, env: Env) {
   const ctx = await consumerCallContext(request, env)
   if (ctx instanceof Response) return ctx
 
-  const context: IdentityConsumerContext = ctx
+  const context: IdentityConsumerContext = {
+    ...ctx,
+    portalSecret: env.BETTER_AUTH_SECRET,
+  }
   const { matched, response } = await consumerHandler.handle(request, {
     prefix: "/api/identity/v1",
     context,
