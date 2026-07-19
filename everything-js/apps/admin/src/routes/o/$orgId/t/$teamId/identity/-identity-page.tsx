@@ -1,5 +1,10 @@
 import { useState } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 import {
   AlertDialog,
@@ -28,6 +33,7 @@ import {
   EmptyHeader,
   EmptyTitle,
 } from "@open-context/ui/components/empty"
+import { Spinner } from "@open-context/ui/components/spinner"
 import { Input } from "@open-context/ui/components/input"
 import {
   Table,
@@ -79,15 +85,19 @@ function IdentitiesTab({
     initialKey ?? null,
   )
 
-  const identitiesQuery = useQuery({
+  const identitiesQuery = useInfiniteQuery({
     queryKey: ["identities", teamId, search],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       identityClient.listIdentities({
         teamId,
         search: search || undefined,
+        ...(pageParam ? { cursor: pageParam } : {}),
       }),
+    initialPageParam: null as { ts: number; id: string } | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
-  const identities = identitiesQuery.data?.identities ?? []
+  const identities =
+    identitiesQuery.data?.pages.flatMap((page) => page.identities) ?? []
 
   const detailQuery = useQuery({
     queryKey: ["identity-detail", teamId, selectedKey],
@@ -166,6 +176,21 @@ function IdentitiesTab({
               </TableBody>
             </Table>
           )}
+          {identitiesQuery.hasNextPage ? (
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => identitiesQuery.fetchNextPage()}
+                disabled={identitiesQuery.isFetchingNextPage}
+              >
+                {identitiesQuery.isFetchingNextPage ? (
+                  <Spinner data-icon="inline-start" />
+                ) : null}
+                Load more
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

@@ -1,5 +1,10 @@
 import { useState } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { PlusIcon, WebhookIcon } from "lucide-react"
 
 import {
@@ -69,13 +74,22 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
     queryKey: ["webhook-endpoints", teamId],
     queryFn: () => webhooksClient.listEndpoints({ teamId }),
   })
-  const messagesQuery = useQuery({
+  const messagesQuery = useInfiniteQuery({
     queryKey: ["webhook-messages", teamId],
-    queryFn: () => webhooksClient.listMessages({ teamId, limit: 50 }),
+    queryFn: ({ pageParam }) =>
+      webhooksClient.listMessages({
+        teamId,
+        limit: 50,
+        ...(pageParam ? { cursor: pageParam } : {}),
+      }),
+    initialPageParam: null as { ts: number; id: string } | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
   const endpoints = endpointsQuery.data?.endpoints ?? []
-  const messages = messagesQuery.data?.messages ?? []
-  const attempts = messagesQuery.data?.attempts ?? []
+  const messages =
+    messagesQuery.data?.pages.flatMap((page) => page.messages) ?? []
+  const attempts =
+    messagesQuery.data?.pages.flatMap((page) => page.attempts) ?? []
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["webhook-endpoints", teamId] })
@@ -427,7 +441,7 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
         <CardHeader>
           <CardTitle>Recent deliveries</CardTitle>
           <CardDescription>
-            Latest 50 messages and their per-endpoint attempts.
+            Messages and their per-endpoint attempts, newest first.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -534,6 +548,21 @@ export default function WebhooksPage({ teamId }: { teamId: string }) {
               </TableBody>
             </Table>
           )}
+          {messagesQuery.hasNextPage ? (
+            <div className="flex justify-center pt-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => messagesQuery.fetchNextPage()}
+                disabled={messagesQuery.isFetchingNextPage}
+              >
+                {messagesQuery.isFetchingNextPage ? (
+                  <Spinner data-icon="inline-start" />
+                ) : null}
+                Load more
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
     </div>

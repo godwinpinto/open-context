@@ -1,5 +1,5 @@
 import { ORPCError, os } from "@orpc/server"
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, lt, or } from "drizzle-orm"
 import { identityId } from "@open-context/core"
 import { z } from "zod"
 
@@ -351,12 +351,17 @@ const removeIdentityOverride = base
     return { success: true }
   })
 
+// Segment overrides are config-scale and returned whole; identity
+// overrides can grow per-customer, so they page with a keyset cursor
+// (createdAt desc, id desc; ts is epoch ms).
 const listOverrides = base
   .input(
     z.object({
       teamId: z.string(),
       flagKey: z.string(),
       environmentKey: z.string(),
+      limit: z.number().int().min(1).max(200).default(50),
+      cursor: z.object({ ts: z.number().int(), id: z.string() }).optional(),
     }),
   )
   .handler(async ({ input, context }) => {
@@ -367,27 +372,52 @@ const listOverrides = base
       input.flagKey,
       input.environmentKey,
     )
-    const [segments, identities] = await Promise.all([
-      context.db
-        .select()
-        .from(flagSegmentOverride)
-        .where(
+    const identityFilters = [
+      eq(flagIdentityOverride.flagId, definition.id),
+      eq(flagIdentityOverride.environmentId, environment.id),
+    ]
+    if (input.cursor) {
+      const at = new Date(input.cursor.ts)
+      identityFilters.push(
+        or(
+          lt(flagIdentityOverride.createdAt, at),
           and(
-            eq(flagSegmentOverride.flagId, definition.id),
-            eq(flagSegmentOverride.environmentId, environment.id),
+            eq(flagIdentityOverride.createdAt, at),
+            lt(flagIdentityOverride.id, input.cursor.id),
           ),
-        ),
+        )!,
+      )
+    }
+    const [segments, identityRows] = await Promise.all([
+      // Segments only on the first page — they don't paginate.
+      input.cursor
+        ? Promise.resolve([])
+        : context.db
+            .select()
+            .from(flagSegmentOverride)
+            .where(
+              and(
+                eq(flagSegmentOverride.flagId, definition.id),
+                eq(flagSegmentOverride.environmentId, environment.id),
+              ),
+            ),
       context.db
         .select()
         .from(flagIdentityOverride)
-        .where(
-          and(
-            eq(flagIdentityOverride.flagId, definition.id),
-            eq(flagIdentityOverride.environmentId, environment.id),
-          ),
-        ),
+        .where(and(...identityFilters))
+        .orderBy(
+          desc(flagIdentityOverride.createdAt),
+          desc(flagIdentityOverride.id),
+        )
+        .limit(input.limit + 1),
     ])
-    return { segments, identities }
+    const identities = identityRows.slice(0, input.limit)
+    const last = identities[identities.length - 1]
+    const nextCursor =
+      identityRows.length > input.limit && last
+        ? { ts: last.createdAt.getTime(), id: last.id }
+        : null
+    return { segments, identities, nextCursor }
   })
 
 // Debugger: full evaluation WITH source attribution.

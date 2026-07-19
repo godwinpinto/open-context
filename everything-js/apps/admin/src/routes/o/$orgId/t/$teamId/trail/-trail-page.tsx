@@ -1,8 +1,10 @@
 import { Link, useParams } from "@tanstack/react-router"
-import { useQuery } from "@tanstack/react-query"
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
 import { Card, CardContent } from "@open-context/ui/components/card"
+import { Spinner } from "@open-context/ui/components/spinner"
 import {
   Empty,
   EmptyContent,
@@ -26,9 +28,15 @@ export default function TrailPage({ teamId }: { teamId: string }) {
   const marker = "CSR_ONLY_TRAIL_PAGE_MARKER"
   const { orgId } = useParams({ strict: false }) as { orgId: string }
 
-  const eventsQuery = useQuery({
+  const eventsQuery = useInfiniteQuery({
     queryKey: ["trail-events", teamId],
-    queryFn: () => trailClient.listEvents({ teamId }),
+    queryFn: ({ pageParam }) =>
+      trailClient.listEvents({
+        teamId,
+        ...(pageParam ? { cursor: pageParam } : {}),
+      }),
+    initialPageParam: null as { ts: number; id: string } | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
 
   const statsQuery = useQuery({
@@ -36,7 +44,7 @@ export default function TrailPage({ teamId }: { teamId: string }) {
     queryFn: () => trailClient.stats({ teamId }),
   })
 
-  const events = eventsQuery.data?.events ?? []
+  const events = eventsQuery.data?.pages.flatMap((page) => page.events) ?? []
 
   return (
     <div className="flex flex-col gap-4" data-marker={marker}>
@@ -115,6 +123,21 @@ export default function TrailPage({ teamId }: { teamId: string }) {
                 ))}
               </TableBody>
             </Table>
+            {eventsQuery.hasNextPage ? (
+              <div className="flex justify-center pt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => eventsQuery.fetchNextPage()}
+                  disabled={eventsQuery.isFetchingNextPage}
+                >
+                  {eventsQuery.isFetchingNextPage ? (
+                    <Spinner data-icon="inline-start" />
+                  ) : null}
+                  Load more
+                </Button>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
       )}

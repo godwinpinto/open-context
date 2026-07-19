@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lt, sql, type SQL } from "drizzle-orm"
+import { and, desc, eq, gte, lt, or, sql, type SQL } from "drizzle-orm"
 import type { DrizzleD1Database } from "drizzle-orm/d1"
 
 import { meterEvent } from "./schema"
@@ -49,6 +49,9 @@ export type ListParams = {
   limit: number
   type?: string
   subject?: string
+  // Keyset cursor: rows strictly older than (time desc, id desc).
+  // ts is epoch ms.
+  cursor?: { ts: number; id: string }
 }
 
 export type StoredEvent = typeof meterEvent.$inferSelect
@@ -165,11 +168,20 @@ export function createD1EventStore(db: Database, teamId: string): EventStore {
       const filters: SQL[] = [eq(meterEvent.teamId, teamId)]
       if (params.type) filters.push(eq(meterEvent.type, params.type))
       if (params.subject) filters.push(eq(meterEvent.subject, params.subject))
+      if (params.cursor) {
+        const at = new Date(params.cursor.ts)
+        filters.push(
+          or(
+            lt(meterEvent.time, at),
+            and(eq(meterEvent.time, at), lt(meterEvent.id, params.cursor.id)),
+          )!,
+        )
+      }
       return db
         .select()
         .from(meterEvent)
         .where(and(...filters))
-        .orderBy(desc(meterEvent.time))
+        .orderBy(desc(meterEvent.time), desc(meterEvent.id))
         .limit(params.limit)
     },
   }

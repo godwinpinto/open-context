@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray } from "drizzle-orm"
+import { and, desc, eq, inArray, lt, or } from "drizzle-orm"
 import {
   assertValidEndpointUrl,
   coreWebhookAttempt,
@@ -97,11 +97,13 @@ export async function handlePortal(request: Request, env: Env) {
     )
 
     if (request.method === "GET" && path === "/webhooks/endpoints") {
+      // A customer's own endpoints are few; hard-cap instead of paging.
       const endpoints = await db
         .select()
         .from(coreWebhookEndpoint)
         .where(owned)
         .orderBy(desc(coreWebhookEndpoint.createdAt))
+        .limit(200)
       return Response.json({ endpoints })
     }
 
@@ -135,18 +137,48 @@ export async function handlePortal(request: Request, env: Env) {
     }
 
     if (request.method === "GET" && path === "/webhooks/messages") {
-      const messages = await db
+      // Keyset pagination via query params: ?limit=50&cursor_ts=<epoch
+      // ms>&cursor_id=<id>. nextCursor in the response feeds the next
+      // request; null means no more pages.
+      const limitParam = Number(url.searchParams.get("limit"))
+      const limit =
+        Number.isInteger(limitParam) && limitParam >= 1 && limitParam <= 200
+          ? limitParam
+          : 50
+      const cursorTs = Number(url.searchParams.get("cursor_ts"))
+      const cursorId = url.searchParams.get("cursor_id")
+      const filters = [
+        eq(coreWebhookMessage.teamId, claims.teamId),
+        eq(coreWebhookMessage.ownerType, "identity"),
+        eq(coreWebhookMessage.ownerKey, claims.identity),
+      ]
+      if (Number.isFinite(cursorTs) && cursorTs > 0 && cursorId) {
+        const at = new Date(cursorTs)
+        filters.push(
+          or(
+            lt(coreWebhookMessage.createdAt, at),
+            and(
+              eq(coreWebhookMessage.createdAt, at),
+              lt(coreWebhookMessage.id, cursorId),
+            ),
+          )!,
+        )
+      }
+      const rows = await db
         .select()
         .from(coreWebhookMessage)
-        .where(
-          and(
-            eq(coreWebhookMessage.teamId, claims.teamId),
-            eq(coreWebhookMessage.ownerType, "identity"),
-            eq(coreWebhookMessage.ownerKey, claims.identity),
-          ),
+        .where(and(...filters))
+        .orderBy(
+          desc(coreWebhookMessage.createdAt),
+          desc(coreWebhookMessage.id),
         )
-        .orderBy(desc(coreWebhookMessage.createdAt))
-        .limit(50)
+        .limit(limit + 1)
+      const messages = rows.slice(0, limit)
+      const last = messages.at(-1)
+      const nextCursor =
+        rows.length > limit && last
+          ? { ts: last.createdAt.getTime(), id: last.id }
+          : null
       const attempts = messages.length
         ? await db
             .select()
@@ -158,7 +190,7 @@ export async function handlePortal(request: Request, env: Env) {
               ),
             )
         : []
-      return Response.json({ messages, attempts })
+      return Response.json({ messages, attempts, nextCursor })
     }
   }
 

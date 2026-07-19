@@ -1,5 +1,5 @@
 import { ORPCError, os } from "@orpc/server"
-import { and, desc, eq, inArray } from "drizzle-orm"
+import { and, desc, eq, inArray, lt, or } from "drizzle-orm"
 import {
   assertValidEndpointUrl,
   coreWebhookAttempt,
@@ -110,16 +110,42 @@ const rotateSecret = base
   })
 
 // Recent messages with their delivery attempts, newest first.
+// Keyset cursor: (createdAt desc, id desc); ts is epoch ms.
 const listMessages = base
-  .input(z.object({ teamId: z.string(), limit: z.number().int().min(1).max(200).default(50) }))
+  .input(
+    z.object({
+      teamId: z.string(),
+      limit: z.number().int().min(1).max(200).default(50),
+      cursor: z.object({ ts: z.number().int(), id: z.string() }).optional(),
+    }),
+  )
   .handler(async ({ input, context }) => {
     await context.assertTeamAccess(input.teamId)
-    const messages = await context.db
+    const filters = [eq(coreWebhookMessage.teamId, input.teamId)]
+    if (input.cursor) {
+      const at = new Date(input.cursor.ts)
+      filters.push(
+        or(
+          lt(coreWebhookMessage.createdAt, at),
+          and(
+            eq(coreWebhookMessage.createdAt, at),
+            lt(coreWebhookMessage.id, input.cursor.id),
+          ),
+        )!,
+      )
+    }
+    const rows = await context.db
       .select()
       .from(coreWebhookMessage)
-      .where(eq(coreWebhookMessage.teamId, input.teamId))
-      .orderBy(desc(coreWebhookMessage.createdAt))
-      .limit(input.limit)
+      .where(and(...filters))
+      .orderBy(desc(coreWebhookMessage.createdAt), desc(coreWebhookMessage.id))
+      .limit(input.limit + 1)
+    const messages = rows.slice(0, input.limit)
+    const last = messages[messages.length - 1]
+    const nextCursor =
+      rows.length > input.limit && last
+        ? { ts: last.createdAt.getTime(), id: last.id }
+        : null
     const messageIds = messages.map((message) => message.id)
     const attempts = messageIds.length
       ? await context.db
@@ -128,7 +154,7 @@ const listMessages = base
           .where(inArray(coreWebhookAttempt.messageId, messageIds))
           .orderBy(desc(coreWebhookAttempt.updatedAt))
       : []
-    return { messages, attempts }
+    return { messages, attempts, nextCursor }
   })
 
 // Manual "deliver now": runs the same sweep the consumer traffic

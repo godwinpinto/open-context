@@ -1,5 +1,10 @@
 import { useState } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { FlagIcon, PlusIcon } from "lucide-react"
 
 import {
@@ -409,15 +414,28 @@ function FlagDetail({
   environmentKey: string
 }) {
   const queryClient = useQueryClient()
-  const overridesQuery = useQuery({
+  const overridesQuery = useInfiniteQuery({
     queryKey: ["flag-overrides", teamId, flagKey, environmentKey],
-    queryFn: () => flagsClient.listOverrides({ teamId, flagKey, environmentKey }),
+    queryFn: ({ pageParam }) =>
+      flagsClient.listOverrides({
+        teamId,
+        flagKey,
+        environmentKey,
+        ...(pageParam ? { cursor: pageParam } : {}),
+      }),
+    initialPageParam: null as { ts: number; id: string } | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
   const segmentsQuery = useQuery({
     queryKey: ["segments", teamId],
     queryFn: () => segmentsClient.listSegments({ teamId }),
   })
-  const overrides = overridesQuery.data
+  // Segment overrides ride on the first page only; identity overrides
+  // accumulate across pages.
+  const segmentOverrides =
+    overridesQuery.data?.pages[0]?.segments ?? []
+  const identityOverrides =
+    overridesQuery.data?.pages.flatMap((page) => page.identities) ?? []
   const segments = segmentsQuery.data?.segments ?? []
 
   const invalidate = () =>
@@ -532,7 +550,7 @@ function FlagDetail({
               Set
             </Button>
           </div>
-          {(overrides?.segments ?? []).map((override) => (
+          {segmentOverrides.map((override) => (
             <div
               key={override.id}
               className="text-muted-foreground flex items-center gap-2 font-mono text-xs"
@@ -582,7 +600,7 @@ function FlagDetail({
               Set
             </Button>
           </div>
-          {(overrides?.identities ?? []).map((override) => (
+          {identityOverrides.map((override) => (
             <div
               key={override.id}
               className="text-muted-foreground flex items-center gap-2 font-mono text-xs"
@@ -600,6 +618,21 @@ function FlagDetail({
               </Button>
             </div>
           ))}
+          {overridesQuery.hasNextPage ? (
+            <div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => overridesQuery.fetchNextPage()}
+                disabled={overridesQuery.isFetchingNextPage}
+              >
+                {overridesQuery.isFetchingNextPage ? (
+                  <Spinner data-icon="inline-start" />
+                ) : null}
+                Load more
+              </Button>
+            </div>
+          ) : null}
         </div>
       </CardContent>
     </Card>

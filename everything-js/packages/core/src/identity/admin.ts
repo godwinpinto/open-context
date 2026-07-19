@@ -1,5 +1,5 @@
 import { os } from "@orpc/server"
-import { and, desc, eq, like } from "drizzle-orm"
+import { and, desc, eq, like, lt, or } from "drizzle-orm"
 import { z } from "zod"
 
 import type { IdentityAdminContext } from "./context"
@@ -8,12 +8,16 @@ import { getMergedProperties } from "./store"
 
 const base = os.$context<IdentityAdminContext>()
 
+// Keyset cursor: (lastSeenAt desc, id desc); ts is epoch ms. lastSeenAt
+// moves as identities are seen again — a row active mid-scroll can
+// reappear on an earlier page, which is acceptable for this view.
 const listIdentities = base
   .input(
     z.object({
       teamId: z.string(),
       search: z.string().max(200).optional(),
       limit: z.number().int().min(1).max(200).default(50),
+      cursor: z.object({ ts: z.number().int(), id: z.string() }).optional(),
     }),
   )
   .handler(async ({ input, context }) => {
@@ -22,13 +26,31 @@ const listIdentities = base
     if (input.search) {
       filters.push(like(coreIdentity.key, `%${input.search}%`))
     }
-    const identities = await context.db
+    if (input.cursor) {
+      const at = new Date(input.cursor.ts)
+      filters.push(
+        or(
+          lt(coreIdentity.lastSeenAt, at),
+          and(
+            eq(coreIdentity.lastSeenAt, at),
+            lt(coreIdentity.id, input.cursor.id),
+          ),
+        )!,
+      )
+    }
+    const rows = await context.db
       .select()
       .from(coreIdentity)
       .where(and(...filters))
-      .orderBy(desc(coreIdentity.lastSeenAt))
-      .limit(input.limit)
-    return { identities }
+      .orderBy(desc(coreIdentity.lastSeenAt), desc(coreIdentity.id))
+      .limit(input.limit + 1)
+    const identities = rows.slice(0, input.limit)
+    const last = identities[identities.length - 1]
+    const nextCursor =
+      rows.length > input.limit && last
+        ? { ts: last.lastSeenAt.getTime(), id: last.id }
+        : null
+    return { identities, nextCursor }
   })
 
 const getIdentity = base

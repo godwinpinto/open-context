@@ -181,12 +181,22 @@ export function createClickHouseEventStore(
         filters.push("subject = {subject:String}")
         queryParams.subject = params.subject
       }
+      if (params.cursor) {
+        // Keyset: strictly older than (time desc, id desc). CH DateTime
+        // has second precision, so compare on seconds; id breaks ties.
+        filters.push(
+          "(time < fromUnixTimestamp({cursorTs:UInt32}) OR " +
+            "(time = fromUnixTimestamp({cursorTs:UInt32}) AND id < {cursorId:String}))"
+        )
+        queryParams.cursorTs = Math.floor(params.cursor.ts / 1000)
+        queryParams.cursorId = params.cursor.id
+      }
       const query =
         `SELECT id, type, subject, source, data, ` +
         `toUnixTimestamp(time) AS time_ts, ` +
         `toUnixTimestamp(ingested_at) AS ingested_ts ` +
         `FROM ${table} FINAL WHERE ${filters.join(" AND ")} ` +
-        `ORDER BY time DESC LIMIT {limit:UInt32} FORMAT JSON`
+        `ORDER BY time DESC, id DESC LIMIT {limit:UInt32} FORMAT JSON`
 
       const text = await request(query, queryParams)
       const parsed = JSON.parse(text) as {

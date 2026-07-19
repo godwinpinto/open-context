@@ -1,5 +1,10 @@
 import { useState } from "react"
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 
 import { PlusIcon } from "lucide-react"
 
@@ -453,11 +458,18 @@ function QueryPanel({
 // ——— Events ———
 
 function EventsTab({ teamId }: { teamId: string }) {
-  const eventsQuery = useQuery({
+  const eventsQuery = useInfiniteQuery({
     queryKey: ["meter-events", teamId],
-    queryFn: () => meterClient.listEvents({ teamId, limit: 50 }),
+    queryFn: ({ pageParam }) =>
+      meterClient.listEvents({
+        teamId,
+        limit: 50,
+        ...(pageParam ? { cursor: pageParam } : {}),
+      }),
+    initialPageParam: null as { ts: number; id: string } | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   })
-  const events = eventsQuery.data?.events ?? []
+  const events = eventsQuery.data?.pages.flatMap((page) => page.events) ?? []
 
   return (
     <Card>
@@ -510,6 +522,21 @@ function EventsTab({ teamId }: { teamId: string }) {
             </TableBody>
           </Table>
         )}
+        {eventsQuery.hasNextPage ? (
+          <div className="flex justify-center pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => eventsQuery.fetchNextPage()}
+              disabled={eventsQuery.isFetchingNextPage}
+            >
+              {eventsQuery.isFetchingNextPage ? (
+                <Spinner data-icon="inline-start" />
+              ) : null}
+              Load more
+            </Button>
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   )

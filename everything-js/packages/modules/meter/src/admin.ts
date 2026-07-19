@@ -138,6 +138,8 @@ const queryMeter = base
 
 // ——— Events (debug) ———
 
+// Keyset cursor: (time desc, id desc); ts is epoch ms. The store gets
+// limit + 1 so one extra row signals another page without a count query.
 const listEvents = base
   .input(
     z.object({
@@ -145,16 +147,24 @@ const listEvents = base
       limit: z.number().int().min(1).max(200).default(50),
       type: z.string().optional(),
       subject: z.string().optional(),
+      cursor: z.object({ ts: z.number().int(), id: z.string() }).optional(),
     }),
   )
   .handler(async ({ input, context }) => {
     await context.assertTeamAccess(input.teamId)
-    const events = await (await context.storeFor(input.teamId)).list({
-      limit: input.limit,
+    const rows = await (await context.storeFor(input.teamId)).list({
+      limit: input.limit + 1,
       type: input.type,
       subject: input.subject,
+      cursor: input.cursor,
     })
-    return { events }
+    const events = rows.slice(0, input.limit)
+    const last = events[events.length - 1]
+    const nextCursor =
+      rows.length > input.limit && last
+        ? { ts: last.time.getTime(), id: last.id }
+        : null
+    return { events, nextCursor }
   })
 
 // ——— Features ———
