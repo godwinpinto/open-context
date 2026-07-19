@@ -2,6 +2,7 @@ import { useState } from "react"
 import {
   ChevronsUpDown,
   Footprints,
+  Gauge,
   KeyRound,
   LayoutDashboard,
   LogOut,
@@ -247,6 +248,20 @@ export function AppSidebar({
                 >
                   <Footprints />
                   <span>Trail</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      to="/o/$orgId/t/$teamId/meter"
+                      params={{ orgId: organization.id, teamId: team.id }}
+                    />
+                  }
+                  tooltip="Meter"
+                >
+                  <Gauge />
+                  <span>Meter</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

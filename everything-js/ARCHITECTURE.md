@@ -13,7 +13,8 @@ packages/
   ui/                 @open-context/ui — shadcn primitives + theme (shared shell)
   cli/                open-context CLI (device-code login, bearer auth)
   modules/
-    trail/            @open-context/module-trail — reference module
+    trail/            @open-context/module-trail — reference module (behavior analytics)
+    meter/            @open-context/module-meter — usage metering + entitlements
   plugins/            (reserved)
 ```
 
@@ -45,6 +46,20 @@ gives the UI end-to-end types.
 
 MCP tools (future): derived from consumer procedures' zod contracts,
 aggregated at a single `/api/mcp` endpoint behind the OAuth provider.
+
+### Event storage & connectors (Meter)
+
+`meter_event` mirrors OpenMeter's ClickHouse `om_events` layout
+(namespace=teamId, id, type, subject, source, time, raw JSON data) and
+meters extract `valueProperty` at query time (`json_extract` ↔
+`JSONExtract`). All event I/O goes through the module's `EventStore`
+interface; the host constructs it per team in `lib/modules/meter.ts` —
+that call site is where the planned per-team **connectors** feature
+plugs in: a team with a ClickHouse connector configured gets a
+ClickHouse store, everyone else stays on D1. Entitlement balances are
+event-derived ("derived counter"): increment = ingest event, decrement
+= negative value, idempotent via (teamId, source, id) dedup — never a
+mutable counter column.
 
 ## URL namespace (reserved prefixes)
 
