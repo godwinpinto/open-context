@@ -8,6 +8,7 @@ export {
   meterEntitlement,
   meterEvent,
   meterFeature,
+  meterGrant,
 } from "@open-context/module-meter/schema"
 
 export const user = sqliteTable("user", {

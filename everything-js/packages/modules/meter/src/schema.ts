@@ -85,6 +85,31 @@ export const meterFeature = sqliteTable(
   (table) => [uniqueIndex("meter_feature_key_idx").on(table.teamId, table.key)],
 )
 
+// Credit grants against a metered entitlement (OpenMeter's grant
+// model, minus recurrence/rollover). Usage burns pools in
+// priority → nearest-expiry → oldest order; expired or voided credit
+// simply stops being burnable. Balances stay event-derived — grants
+// define pools, the burn-down engine (burndown.ts) allocates usage.
+export const meterGrant = sqliteTable(
+  "meter_grant",
+  {
+    id: text("id").primaryKey(),
+    teamId: text("team_id").notNull(),
+    entitlementId: text("entitlement_id").notNull(),
+    amount: real("amount").notNull(),
+    // 1 = burns first. The periodic allowance burns at priority 1.
+    priority: integer("priority").notNull().default(1),
+    effectiveAt: integer("effective_at", { mode: "timestamp" }).notNull(),
+    // Null = never expires.
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    voidedAt: integer("voided_at", { mode: "timestamp" }),
+    createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  },
+  (table) => [
+    index("meter_grant_entitlement_idx").on(table.teamId, table.entitlementId),
+  ],
+)
+
 export const meterEntitlement = sqliteTable(
   "meter_entitlement",
   {

@@ -436,6 +436,138 @@ function EventsTab({ teamId }: { teamId: string }) {
   )
 }
 
+// ——— Grants ———
+
+function GrantsPanel({
+  teamId,
+  entitlementId,
+}: {
+  teamId: string
+  entitlementId: string
+}) {
+  const queryClient = useQueryClient()
+  const grantsQuery = useQuery({
+    queryKey: ["meter-grants", teamId, entitlementId],
+    queryFn: () => meterClient.listGrants({ teamId, entitlementId }),
+  })
+  const grants = grantsQuery.data?.grants ?? []
+
+  const [amount, setAmount] = useState("500")
+  const [priority, setPriority] = useState("2")
+  const [expiresDays, setExpiresDays] = useState("")
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({
+      queryKey: ["meter-grants", teamId, entitlementId],
+    })
+
+  const create = useMutation({
+    mutationFn: () =>
+      meterClient.createGrant({
+        teamId,
+        entitlementId,
+        amount: Number(amount),
+        priority: Number(priority) || 1,
+        expiresIn: expiresDays
+          ? { unit: "day", count: Number(expiresDays) }
+          : undefined,
+      }),
+    onSuccess: invalidate,
+  })
+
+  const voidGrant = useMutation({
+    mutationFn: (grantId: string) =>
+      meterClient.voidGrant({ teamId, grantId }),
+    onSuccess: invalidate,
+  })
+
+  return (
+    <div className="bg-muted/50 flex flex-col gap-3 rounded-md p-3">
+      <div className="flex flex-wrap items-end gap-2">
+        <Input
+          className="h-8 w-28"
+          type="number"
+          placeholder="amount"
+          value={amount}
+          onChange={(event) => setAmount(event.target.value)}
+        />
+        <Input
+          className="h-8 w-24"
+          type="number"
+          placeholder="priority"
+          title="1 burns first; the periodic allowance burns at 1"
+          value={priority}
+          onChange={(event) => setPriority(event.target.value)}
+        />
+        <Input
+          className="h-8 w-36"
+          type="number"
+          placeholder="expires (days)"
+          value={expiresDays}
+          onChange={(event) => setExpiresDays(event.target.value)}
+        />
+        <Button
+          size="sm"
+          disabled={create.isPending || !Number(amount)}
+          onClick={() => create.mutate()}
+        >
+          Add grant
+        </Button>
+      </div>
+      {grants.length > 0 && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Amount</TableHead>
+              <TableHead>Priority</TableHead>
+              <TableHead>Expires</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {grants.map((grant) => {
+              const expired =
+                grant.expiresAt && new Date(grant.expiresAt) < new Date()
+              return (
+                <TableRow key={grant.id}>
+                  <TableCell className="font-mono">{grant.amount}</TableCell>
+                  <TableCell>{grant.priority}</TableCell>
+                  <TableCell className="text-muted-foreground text-xs">
+                    {grant.expiresAt
+                      ? new Date(grant.expiresAt).toLocaleString()
+                      : "never"}
+                  </TableCell>
+                  <TableCell>
+                    {grant.voidedAt ? (
+                      <Badge variant="destructive">voided</Badge>
+                    ) : expired ? (
+                      <Badge variant="secondary">expired</Badge>
+                    ) : (
+                      <Badge>active</Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {!grant.voidedAt && !expired && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => voidGrant.mutate(grant.id)}
+                      >
+                        Void
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      )}
+    </div>
+  )
+}
+
 // ——— Features & Entitlements ———
 
 function EntitlementsTab({ teamId }: { teamId: string }) {
@@ -498,6 +630,8 @@ function EntitlementsTab({ teamId }: { teamId: string }) {
       })
     },
   })
+
+  const [expandedGrants, setExpandedGrants] = useState<string | null>(null)
 
   const [checked, setChecked] = useState<
     Record<string, { hasAccess: boolean; usage: number | null; balance: number | null }>
@@ -650,44 +784,70 @@ function EntitlementsTab({ teamId }: { teamId: string }) {
                 {entitlements.map((entitlement) => {
                   const current = checked[entitlement.id]
                   return (
-                    <TableRow key={entitlement.id}>
-                      <TableCell className="font-mono font-medium">
-                        {entitlement.featureKey}
-                      </TableCell>
-                      <TableCell>{entitlement.subject}</TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {entitlement.limit ?? "—"} / {entitlement.usagePeriod}
-                      </TableCell>
-                      <TableCell>
-                        {current ? (
-                          <span className="font-mono text-xs">
-                            used {current.usage ?? 0}, left{" "}
-                            {current.balance ?? 0}{" "}
-                            {current.hasAccess ? (
-                              <Badge>access</Badge>
-                            ) : (
-                              <Badge variant="destructive">blocked</Badge>
-                            )}
-                          </span>
-                        ) : (
+                    <>
+                      <TableRow key={entitlement.id}>
+                        <TableCell className="font-mono font-medium">
+                          {entitlement.featureKey}
+                        </TableCell>
+                        <TableCell>{entitlement.subject}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {entitlement.limit ?? "—"} / {entitlement.usagePeriod}
+                        </TableCell>
+                        <TableCell>
+                          {current ? (
+                            <span className="font-mono text-xs">
+                              used {current.usage ?? 0}, left{" "}
+                              {current.balance ?? 0}{" "}
+                              {current.hasAccess ? (
+                                <Badge>access</Badge>
+                              ) : (
+                                <Badge variant="destructive">blocked</Badge>
+                              )}
+                            </span>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={check.isPending}
+                              onClick={() =>
+                                check.mutate({
+                                  id: entitlement.id,
+                                  featureKey: entitlement.featureKey,
+                                  subject: entitlement.subject,
+                                })
+                              }
+                            >
+                              Check
+                            </Button>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
                           <Button
-                            variant="outline"
+                            variant="ghost"
                             size="sm"
-                            disabled={check.isPending}
                             onClick={() =>
-                              check.mutate({
-                                id: entitlement.id,
-                                featureKey: entitlement.featureKey,
-                                subject: entitlement.subject,
-                              })
+                              setExpandedGrants((previous) =>
+                                previous === entitlement.id
+                                  ? null
+                                  : entitlement.id,
+                              )
                             }
                           >
-                            Check
+                            Grants
                           </Button>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right" />
-                    </TableRow>
+                        </TableCell>
+                      </TableRow>
+                      {expandedGrants === entitlement.id && (
+                        <TableRow key={`${entitlement.id}-grants`}>
+                          <TableCell colSpan={5}>
+                            <GrantsPanel
+                              teamId={teamId}
+                              entitlementId={entitlement.id}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </>
                   )
                 })}
               </TableBody>

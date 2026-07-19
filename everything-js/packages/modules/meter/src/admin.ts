@@ -3,7 +3,7 @@ import { and, desc, eq } from "drizzle-orm"
 import { z } from "zod"
 
 import type { MeterAdminContext } from "./context"
-import { meter, meterEntitlement, meterFeature } from "./schema"
+import { meter, meterEntitlement, meterFeature, meterGrant } from "./schema"
 import type { Aggregation, WindowSize } from "./store"
 import { computeEntitlementValue } from "./value"
 
@@ -297,6 +297,102 @@ const deleteEntitlement = base
     return { success: true }
   })
 
+// ——— Grants ———
+
+const EXPIRY_UNITS = { hour: 3600, day: 86400, week: 604800 } as const
+
+const listGrants = base
+  .input(z.object({ teamId: z.string(), entitlementId: z.string() }))
+  .handler(async ({ input, context }) => {
+    await context.assertTeamAccess(input.teamId)
+    const grants = await context.db
+      .select()
+      .from(meterGrant)
+      .where(
+        and(
+          eq(meterGrant.teamId, input.teamId),
+          eq(meterGrant.entitlementId, input.entitlementId),
+        ),
+      )
+      .orderBy(desc(meterGrant.createdAt))
+    return { grants }
+  })
+
+const createGrant = base
+  .input(
+    z.object({
+      teamId: z.string(),
+      entitlementId: z.string(),
+      amount: z.number().positive(),
+      // 1 burns first; the periodic allowance burns at 1.
+      priority: z.number().int().min(1).max(100).default(1),
+      effectiveAt: z.iso.datetime().optional(),
+      expiresIn: z
+        .object({
+          unit: z.enum(["hour", "day", "week"]),
+          count: z.number().int().positive().max(520),
+        })
+        .optional(),
+    }),
+  )
+  .handler(async ({ input, context }) => {
+    await context.assertTeamAccess(input.teamId)
+    const [entitlement] = await context.db
+      .select()
+      .from(meterEntitlement)
+      .where(
+        and(
+          eq(meterEntitlement.teamId, input.teamId),
+          eq(meterEntitlement.id, input.entitlementId),
+        ),
+      )
+    if (!entitlement) {
+      throw new ORPCError("NOT_FOUND", { message: "No such entitlement" })
+    }
+    if (entitlement.type !== "metered") {
+      throw new ORPCError("BAD_REQUEST", {
+        message: "Grants only apply to metered entitlements",
+      })
+    }
+    const effectiveAt = input.effectiveAt
+      ? new Date(input.effectiveAt)
+      : new Date()
+    const row = {
+      id: crypto.randomUUID(),
+      teamId: input.teamId,
+      entitlementId: input.entitlementId,
+      amount: input.amount,
+      priority: input.priority,
+      effectiveAt,
+      expiresAt: input.expiresIn
+        ? new Date(
+            effectiveAt.getTime() +
+              EXPIRY_UNITS[input.expiresIn.unit] * input.expiresIn.count * 1000,
+          )
+        : null,
+      voidedAt: null,
+      createdAt: new Date(),
+    }
+    await context.db.insert(meterGrant).values(row)
+    return { grant: row }
+  })
+
+const voidGrant = base
+  .input(z.object({ teamId: z.string(), grantId: z.string() }))
+  .handler(async ({ input, context }) => {
+    await context.assertTeamAccess(input.teamId)
+    await context.db
+      .update(meterGrant)
+      .set({ voidedAt: new Date() })
+      .where(
+        and(
+          eq(meterGrant.teamId, input.teamId),
+          eq(meterGrant.id, input.grantId),
+        ),
+      )
+    return { success: true }
+  })
+
 // Admin-side view of what a subject currently gets — same computation
 // the consumer /value endpoint runs.
 const entitlementValue = base
@@ -331,4 +427,7 @@ export const meterAdminRouter = {
   createEntitlement,
   deleteEntitlement,
   entitlementValue,
+  listGrants,
+  createGrant,
+  voidGrant,
 }

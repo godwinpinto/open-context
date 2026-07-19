@@ -1,9 +1,10 @@
 import { ORPCError } from "@orpc/server"
 import { and, eq } from "drizzle-orm"
 
+import { computeBurnDown, type BurnPool } from "./burndown"
 import type { ModuleDatabase } from "./context"
 import { currentPeriodStart, type UsagePeriod } from "./period"
-import { meter, meterEntitlement, meterFeature } from "./schema"
+import { meter, meterEntitlement, meterFeature, meterGrant } from "./schema"
 import type { Aggregation, EventStore } from "./store"
 
 export type EntitlementValue = {
@@ -14,6 +15,7 @@ export type EntitlementValue = {
   overage: number | null
   limit: number | null
   periodStart: string | null
+  pools: { id: string; kind: "allowance" | "grant"; remaining: number }[]
 }
 
 export async function resolveFeature(
@@ -33,9 +35,20 @@ export async function resolveFeature(
   return feature
 }
 
-// The derived-counter core: balance is computed from events every time,
-// never stored — idempotent ingestion (eventId dedup) and the event log
-// as audit trail come for free.
+const NO_ACCESS: EntitlementValue = {
+  hasAccess: false,
+  type: "boolean",
+  usage: null,
+  balance: null,
+  overage: null,
+  limit: null,
+  periodStart: null,
+  pools: [],
+}
+
+// Balance is computed from events + the pool set on every read — never
+// stored. Pools: the entitlement's periodic allowance (limit, resets
+// each calendar period, burns at priority 1) plus explicit grants.
 export async function computeEntitlementValue(options: {
   db: ModuleDatabase
   store: EventStore
@@ -58,28 +71,10 @@ export async function computeEntitlementValue(options: {
         eq(meterEntitlement.subject, subject),
       ),
     )
-  if (!entitlement) {
-    return {
-      hasAccess: false,
-      type: "boolean",
-      usage: null,
-      balance: null,
-      overage: null,
-      limit: null,
-      periodStart: null,
-    }
-  }
+  if (!entitlement) return NO_ACCESS
 
   if (entitlement.type === "boolean" || !feature.meterId) {
-    return {
-      hasAccess: entitlement.enabled,
-      type: "boolean",
-      usage: null,
-      balance: null,
-      overage: null,
-      limit: null,
-      periodStart: null,
-    }
+    return { ...NO_ACCESS, hasAccess: entitlement.enabled }
   }
 
   const [meterRow] = await db
@@ -96,29 +91,70 @@ export async function computeEntitlementValue(options: {
     entitlement.usagePeriod as UsagePeriod,
     now,
   )
-  const rows = await store.aggregate({
-    eventType: meterRow.eventType,
-    aggregation: meterRow.aggregation as Aggregation,
-    valueProperty: meterRow.valueProperty,
-    from: periodStart,
-    // Aggregate windows are [from, to) and timestamps have second
-    // granularity — nudge past "now" so an event ingested in the same
-    // second (the /usage endpoint's own write) is included.
-    to: new Date(now.getTime() + 1000),
-    subject,
+
+  const pools: BurnPool[] = []
+  if (entitlement.limit != null) {
+    pools.push({
+      id: "allowance",
+      kind: "allowance",
+      amount: entitlement.limit,
+      priority: 1,
+      start: periodStart,
+      end: null,
+      createdAt: entitlement.createdAt,
+    })
+  }
+  const grants = await db
+    .select()
+    .from(meterGrant)
+    .where(
+      and(
+        eq(meterGrant.teamId, teamId),
+        eq(meterGrant.entitlementId, entitlement.id),
+      ),
+    )
+  for (const grant of grants) {
+    if (grant.effectiveAt > now) continue
+    const ends = [grant.expiresAt, grant.voidedAt]
+      .filter((date): date is Date => date != null)
+      .map((date) => date.getTime())
+    pools.push({
+      id: grant.id,
+      kind: "grant",
+      amount: grant.amount,
+      priority: grant.priority,
+      start: grant.effectiveAt,
+      end: ends.length > 0 ? new Date(Math.min(...ends)) : null,
+      createdAt: grant.createdAt,
+    })
+  }
+
+  const result = await computeBurnDown(pools, now, (from, to) => {
+    // Windows are [from, to) with second-granularity timestamps —
+    // nudge the final slice past "now" so a same-second write (the
+    // /usage endpoint's own event) is included.
+    const end =
+      to.getTime() === now.getTime() ? new Date(now.getTime() + 1000) : to
+    return store
+      .aggregate({
+        eventType: meterRow.eventType,
+        aggregation: meterRow.aggregation as Aggregation,
+        valueProperty: meterRow.valueProperty,
+        from,
+        to: end,
+        subject,
+      })
+      .then((rows) => rows[0]?.value ?? 0)
   })
-  const usage = rows[0]?.value ?? 0
-  const limit = entitlement.limit ?? 0
-  const balance = Math.max(limit - usage, 0)
-  const overage = Math.max(usage - limit, 0)
 
   return {
-    hasAccess: entitlement.isSoftLimit ? true : usage < limit,
+    hasAccess: entitlement.isSoftLimit ? true : result.balance > 0,
     type: "metered",
-    usage,
-    balance,
-    overage,
-    limit,
+    usage: result.usage,
+    balance: result.balance,
+    overage: result.overage,
+    limit: entitlement.limit,
     periodStart: periodStart.toISOString(),
+    pools: result.pools,
   }
 }
