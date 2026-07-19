@@ -45,9 +45,22 @@ const OPERATORS = [
   "gte",
   "lt",
   "lte",
+  "in",
+  "regex",
   "is_set",
   "is_not_set",
 ] as const
+
+function regexError(pattern: string): string | null {
+  if (!pattern) return null
+  if (pattern.length > 200) return "Pattern too long (max 200 chars)"
+  try {
+    new RegExp(pattern)
+    return null
+  } catch {
+    return "Invalid regular expression"
+  }
+}
 
 type Operator = (typeof OPERATORS)[number]
 
@@ -221,7 +234,12 @@ function CreateSegmentDialog({
             value:
               c.operator === "is_set" || c.operator === "is_not_set"
                 ? undefined
-                : c.value,
+                : c.operator === "in"
+                  ? c.value
+                      .split(",")
+                      .map((entry) => entry.trim())
+                      .filter(Boolean)
+                  : c.value,
           })),
         ...(splitPct
           ? [{ type: "split" as const, percentage: Number(splitPct) }]
@@ -365,20 +383,38 @@ function CreateSegmentDialog({
                     </Select>
                     {condition.operator !== "is_set" &&
                       condition.operator !== "is_not_set" && (
-                        <Input
-                          className="h-8 flex-1"
-                          placeholder="value"
-                          value={condition.value}
-                          onChange={(event) =>
-                            setConditions((previous) =>
-                              previous.map((c, i) =>
-                                i === index
-                                  ? { ...c, value: event.target.value }
-                                  : c,
-                              ),
-                            )
-                          }
-                        />
+                        <div className="flex flex-1 flex-col gap-1">
+                          <Input
+                            className="h-8"
+                            placeholder={
+                              condition.operator === "in"
+                                ? "values, comma-separated"
+                                : condition.operator === "regex"
+                                  ? "pattern e.g. ^pro"
+                                  : "value"
+                            }
+                            aria-invalid={
+                              condition.operator === "regex" &&
+                              !!regexError(condition.value)
+                            }
+                            value={condition.value}
+                            onChange={(event) =>
+                              setConditions((previous) =>
+                                previous.map((c, i) =>
+                                  i === index
+                                    ? { ...c, value: event.target.value }
+                                    : c,
+                                ),
+                              )
+                            }
+                          />
+                          {condition.operator === "regex" &&
+                            regexError(condition.value) && (
+                              <p className="text-destructive text-xs">
+                                {regexError(condition.value)}
+                              </p>
+                            )}
+                        </div>
                       )}
                   </div>
                 ))}
@@ -409,7 +445,17 @@ function CreateSegmentDialog({
 
             {error && <p className="text-destructive text-sm">{error}</p>}
             <Field>
-              <Button type="submit" disabled={create.isPending || !key || !name}>
+              <Button
+                type="submit"
+                disabled={
+                  create.isPending ||
+                  !key ||
+                  !name ||
+                  conditions.some(
+                    (c) => c.operator === "regex" && !!regexError(c.value),
+                  )
+                }
+              >
                 Create
               </Button>
             </Field>
