@@ -1,6 +1,9 @@
-import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Badge } from "@open-context/ui/components/badge"
+import { Button } from "@open-context/ui/components/button"
+import { Input } from "@open-context/ui/components/input"
 import {
   Card,
   CardContent,
@@ -36,9 +39,27 @@ type PortalUsage = {
   }[]
 }
 
-async function portalFetch<T>(path: string, token: string): Promise<T> {
+type PortalEndpoint = {
+  id: string
+  url: string
+  description: string | null
+  secret: string
+  eventTypes: string[] | null
+  disabled: boolean
+  disabledReason: string | null
+}
+
+async function portalFetch<T>(
+  path: string,
+  token: string,
+  init?: RequestInit,
+): Promise<T> {
   const response = await fetch(`/api/portal${path}`, {
-    headers: { authorization: `Bearer ${token}` },
+    ...init,
+    headers: {
+      authorization: `Bearer ${token}`,
+      ...(init?.body ? { "content-type": "application/json" } : {}),
+    },
   })
   if (!response.ok) {
     const body = (await response.json().catch(() => null)) as {
@@ -104,37 +125,144 @@ export default function PortalPage({ token }: { token?: string }) {
         ) : null}
       </div>
 
-      {me.data && !me.data.scopes.includes("meter:read") ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No usage access</CardTitle>
-            <CardDescription>
-              This portal link does not include usage viewing.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      ) : usage.isLoading || !usage.data ? (
-        <Skeleton className="h-40 w-full" />
-      ) : usage.data.entitlements.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No entitlements</CardTitle>
-            <CardDescription>
-              Nothing is provisioned for this account yet.
-            </CardDescription>
-          </CardHeader>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {usage.data.entitlements.map((entitlement) => (
-            <EntitlementCard
-              key={entitlement.featureKey}
-              entitlement={entitlement}
-            />
-          ))}
-        </div>
-      )}
+      {me.data?.scopes.includes("meter:read") ? (
+        usage.isLoading || !usage.data ? (
+          <Skeleton className="h-40 w-full" />
+        ) : usage.data.entitlements.length === 0 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>No entitlements</CardTitle>
+              <CardDescription>
+                Nothing is provisioned for this account yet.
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {usage.data.entitlements.map((entitlement) => (
+              <EntitlementCard
+                key={entitlement.featureKey}
+                entitlement={entitlement}
+              />
+            ))}
+          </div>
+        )
+      ) : null}
+
+      {me.data?.scopes.includes("webhooks:manage") ? (
+        <WebhooksPanel token={token} />
+      ) : null}
     </PortalShell>
+  )
+}
+
+// Svix App Portal-style self-service: the end-customer manages the
+// webhook endpoints THEY receive on, scoped to the token's identity.
+function WebhooksPanel({ token }: { token: string }) {
+  const queryClient = useQueryClient()
+  const endpoints = useQuery({
+    queryKey: ["portal", "webhook-endpoints", token],
+    queryFn: () =>
+      portalFetch<{ endpoints: PortalEndpoint[] }>(
+        "/webhooks/endpoints",
+        token,
+      ),
+    retry: false,
+  })
+  const invalidate = () =>
+    queryClient.invalidateQueries({
+      queryKey: ["portal", "webhook-endpoints", token],
+    })
+
+  const [url, setUrl] = useState("")
+  const [revealedSecret, setRevealedSecret] = useState<string | null>(null)
+  const create = useMutation({
+    mutationFn: () =>
+      portalFetch<{ endpoint: PortalEndpoint }>("/webhooks/endpoints", token, {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }),
+    onSuccess: (result) => {
+      setUrl("")
+      setRevealedSecret(result.endpoint.secret)
+      invalidate()
+    },
+  })
+  const remove = useMutation({
+    mutationFn: (id: string) =>
+      portalFetch<{ deleted: boolean }>(`/webhooks/endpoints/${id}`, token, {
+        method: "DELETE",
+      }),
+    onSuccess: invalidate,
+  })
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Webhook endpoints</CardTitle>
+        <CardDescription>
+          Where we deliver event notifications for your account. Deliveries
+          are signed (Standard Webhooks).
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Input
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="https://example.com/webhooks"
+          />
+          <Button
+            onClick={() => create.mutate()}
+            disabled={create.isPending || !url}
+          >
+            {create.isPending ? "Adding…" : "Add"}
+          </Button>
+        </div>
+        {create.error ? (
+          <p className="text-destructive text-sm">{create.error.message}</p>
+        ) : null}
+        {revealedSecret ? (
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Signing secret:</p>
+            <code className="bg-muted block break-all rounded p-2 text-xs">
+              {revealedSecret}
+            </code>
+          </div>
+        ) : null}
+        {(endpoints.data?.endpoints ?? []).length === 0 ? (
+          <p className="text-muted-foreground text-sm">No endpoints yet.</p>
+        ) : (
+          <div className="space-y-2">
+            {endpoints.data!.endpoints.map((endpoint) => (
+              <div
+                key={endpoint.id}
+                className="flex items-center justify-between gap-2 rounded-md border p-2"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-mono text-xs">{endpoint.url}</p>
+                  {endpoint.disabled ? (
+                    <Badge
+                      variant="destructive"
+                      title={endpoint.disabledReason ?? undefined}
+                    >
+                      Disabled
+                    </Badge>
+                  ) : null}
+                </div>
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => remove.mutate(endpoint.id)}
+                >
+                  Remove
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 

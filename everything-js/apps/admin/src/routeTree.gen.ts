@@ -33,6 +33,8 @@ import { Route as ApiMeterV1SplatRouteImport } from './routes/api/meter/v1/$'
 import { Route as ApiSegmentsAdminSplatRouteImport } from './routes/api/segments/admin/$'
 import { Route as ApiTrailAdminSplatRouteImport } from './routes/api/trail/admin/$'
 import { Route as ApiTrailV1SplatRouteImport } from './routes/api/trail/v1/$'
+import { Route as ApiWebhooksAdminSplatRouteImport } from './routes/api/webhooks/admin/$'
+import { Route as ApiWebhooksV1SplatRouteImport } from './routes/api/webhooks/v1/$'
 import { Route as OOrgIdTTeamIdRouteRouteImport } from './routes/o/$orgId/t/$teamId/route'
 import { Route as OOrgIdTTeamIdIndexRouteImport } from './routes/o/$orgId/t/$teamId/index'
 import { Route as OOrgIdTTeamIdAccountRouteRouteImport } from './routes/o/$orgId/t/$teamId/account/route'
@@ -54,6 +56,7 @@ import { Route as OOrgIdTTeamIdManageTeamsRouteImport } from './routes/o/$orgId/
 import { Route as OOrgIdTTeamIdMeterIndexRouteImport } from './routes/o/$orgId/t/$teamId/meter/index'
 import { Route as OOrgIdTTeamIdSegmentsIndexRouteImport } from './routes/o/$orgId/t/$teamId/segments/index'
 import { Route as OOrgIdTTeamIdTrailIndexRouteImport } from './routes/o/$orgId/t/$teamId/trail/index'
+import { Route as OOrgIdTTeamIdWebhooksIndexRouteImport } from './routes/o/$orgId/t/$teamId/webhooks/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -180,6 +183,16 @@ const ApiTrailV1SplatRoute = ApiTrailV1SplatRouteImport.update({
   path: '/api/trail/v1/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiWebhooksAdminSplatRoute = ApiWebhooksAdminSplatRouteImport.update({
+  id: '/api/webhooks/admin/$',
+  path: '/api/webhooks/admin/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiWebhooksV1SplatRoute = ApiWebhooksV1SplatRouteImport.update({
+  id: '/api/webhooks/v1/$',
+  path: '/api/webhooks/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OOrgIdTTeamIdRouteRoute = OOrgIdTTeamIdRouteRouteImport.update({
   id: '/o/$orgId/t/$teamId',
   path: '/o/$orgId/t/$teamId',
@@ -301,6 +314,12 @@ const OOrgIdTTeamIdTrailIndexRoute = OOrgIdTTeamIdTrailIndexRouteImport.update({
   path: '/trail/',
   getParentRoute: () => OOrgIdTTeamIdRouteRoute,
 } as any)
+const OOrgIdTTeamIdWebhooksIndexRoute =
+  OOrgIdTTeamIdWebhooksIndexRouteImport.update({
+    id: '/webhooks/',
+    path: '/webhooks/',
+    getParentRoute: () => OOrgIdTTeamIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -328,6 +347,8 @@ export interface FileRoutesByFullPath {
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
+  '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
+  '/api/webhooks/v1/$': typeof ApiWebhooksV1SplatRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
@@ -348,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
   '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
+  '/o/$orgId/t/$teamId/webhooks/': typeof OOrgIdTTeamIdWebhooksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -374,6 +396,8 @@ export interface FileRoutesByTo {
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
+  '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
+  '/api/webhooks/v1/$': typeof ApiWebhooksV1SplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdIndexRoute
   '/o/$orgId/t/$teamId/account/connected-apps': typeof OOrgIdTTeamIdAccountConnectedAppsRoute
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
@@ -392,6 +416,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/meter': typeof OOrgIdTTeamIdMeterIndexRoute
   '/o/$orgId/t/$teamId/segments': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail': typeof OOrgIdTTeamIdTrailIndexRoute
+  '/o/$orgId/t/$teamId/webhooks': typeof OOrgIdTTeamIdWebhooksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -420,6 +445,8 @@ export interface FileRoutesById {
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
+  '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
+  '/api/webhooks/v1/$': typeof ApiWebhooksV1SplatRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   '/o/$orgId/t/$teamId/': typeof OOrgIdTTeamIdIndexRoute
@@ -440,6 +467,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
   '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
+  '/o/$orgId/t/$teamId/webhooks/': typeof OOrgIdTTeamIdWebhooksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -469,6 +497,8 @@ export interface FileRouteTypes {
     | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
+    | '/api/webhooks/admin/$'
+    | '/api/webhooks/v1/$'
     | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/'
@@ -489,6 +519,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/meter/'
     | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
+    | '/o/$orgId/t/$teamId/webhooks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -515,6 +546,8 @@ export interface FileRouteTypes {
     | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
+    | '/api/webhooks/admin/$'
+    | '/api/webhooks/v1/$'
     | '/o/$orgId/t/$teamId'
     | '/o/$orgId/t/$teamId/account/connected-apps'
     | '/o/$orgId/t/$teamId/account/profile'
@@ -533,6 +566,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/meter'
     | '/o/$orgId/t/$teamId/segments'
     | '/o/$orgId/t/$teamId/trail'
+    | '/o/$orgId/t/$teamId/webhooks'
   id:
     | '__root__'
     | '/'
@@ -560,6 +594,8 @@ export interface FileRouteTypes {
     | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
+    | '/api/webhooks/admin/$'
+    | '/api/webhooks/v1/$'
     | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/'
@@ -580,6 +616,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/meter/'
     | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
+    | '/o/$orgId/t/$teamId/webhooks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -607,6 +644,8 @@ export interface RootRouteChildren {
   ApiSegmentsAdminSplatRoute: typeof ApiSegmentsAdminSplatRoute
   ApiTrailAdminSplatRoute: typeof ApiTrailAdminSplatRoute
   ApiTrailV1SplatRoute: typeof ApiTrailV1SplatRoute
+  ApiWebhooksAdminSplatRoute: typeof ApiWebhooksAdminSplatRoute
+  ApiWebhooksV1SplatRoute: typeof ApiWebhooksV1SplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -779,6 +818,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTrailV1SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/webhooks/admin/$': {
+      id: '/api/webhooks/admin/$'
+      path: '/api/webhooks/admin/$'
+      fullPath: '/api/webhooks/admin/$'
+      preLoaderRoute: typeof ApiWebhooksAdminSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/webhooks/v1/$': {
+      id: '/api/webhooks/v1/$'
+      path: '/api/webhooks/v1/$'
+      fullPath: '/api/webhooks/v1/$'
+      preLoaderRoute: typeof ApiWebhooksV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/o/$orgId/t/$teamId': {
       id: '/o/$orgId/t/$teamId'
       path: '/o/$orgId/t/$teamId'
@@ -926,6 +979,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdTrailIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdRouteRoute
     }
+    '/o/$orgId/t/$teamId/webhooks/': {
+      id: '/o/$orgId/t/$teamId/webhooks/'
+      path: '/webhooks'
+      fullPath: '/o/$orgId/t/$teamId/webhooks/'
+      preLoaderRoute: typeof OOrgIdTTeamIdWebhooksIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
   }
 }
 
@@ -1001,6 +1061,7 @@ interface OOrgIdTTeamIdRouteRouteChildren {
   OOrgIdTTeamIdMeterIndexRoute: typeof OOrgIdTTeamIdMeterIndexRoute
   OOrgIdTTeamIdSegmentsIndexRoute: typeof OOrgIdTTeamIdSegmentsIndexRoute
   OOrgIdTTeamIdTrailIndexRoute: typeof OOrgIdTTeamIdTrailIndexRoute
+  OOrgIdTTeamIdWebhooksIndexRoute: typeof OOrgIdTTeamIdWebhooksIndexRoute
 }
 
 const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
@@ -1013,6 +1074,7 @@ const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
   OOrgIdTTeamIdMeterIndexRoute: OOrgIdTTeamIdMeterIndexRoute,
   OOrgIdTTeamIdSegmentsIndexRoute: OOrgIdTTeamIdSegmentsIndexRoute,
   OOrgIdTTeamIdTrailIndexRoute: OOrgIdTTeamIdTrailIndexRoute,
+  OOrgIdTTeamIdWebhooksIndexRoute: OOrgIdTTeamIdWebhooksIndexRoute,
 }
 
 const OOrgIdTTeamIdRouteRouteWithChildren =
@@ -1045,6 +1107,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiSegmentsAdminSplatRoute: ApiSegmentsAdminSplatRoute,
   ApiTrailAdminSplatRoute: ApiTrailAdminSplatRoute,
   ApiTrailV1SplatRoute: ApiTrailV1SplatRoute,
+  ApiWebhooksAdminSplatRoute: ApiWebhooksAdminSplatRoute,
+  ApiWebhooksV1SplatRoute: ApiWebhooksV1SplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

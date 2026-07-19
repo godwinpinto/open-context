@@ -1,4 +1,10 @@
+import { and, desc, eq, inArray } from "drizzle-orm"
 import {
+  assertValidEndpointUrl,
+  coreWebhookAttempt,
+  coreWebhookEndpoint,
+  coreWebhookMessage,
+  createWebhookEndpoint,
   verifyPortalToken,
   type PortalClaims,
   type PortalScope,
@@ -75,6 +81,85 @@ export async function handlePortal(request: Request, env: Env) {
     const store = await storeForTeam(db, claims.teamId)
     const usage = await portalUsage(db, store, claims.teamId, claims.identity)
     return Response.json(usage)
+  }
+
+  // ——— Webhook endpoint self-service (Svix App Portal-style): the
+  // end-customer manages THEIR OWN endpoints, scoped to the identity
+  // baked into the token. ———
+  if (path.startsWith("/webhooks")) {
+    const denied = requireScope(claims, "webhooks:manage")
+    if (denied) return denied
+    const db = getDb(env)
+    const owned = and(
+      eq(coreWebhookEndpoint.teamId, claims.teamId),
+      eq(coreWebhookEndpoint.ownerType, "identity"),
+      eq(coreWebhookEndpoint.ownerKey, claims.identity),
+    )
+
+    if (request.method === "GET" && path === "/webhooks/endpoints") {
+      const endpoints = await db
+        .select()
+        .from(coreWebhookEndpoint)
+        .where(owned)
+        .orderBy(desc(coreWebhookEndpoint.createdAt))
+      return Response.json({ endpoints })
+    }
+
+    if (request.method === "POST" && path === "/webhooks/endpoints") {
+      const body = (await request.json().catch(() => null)) as {
+        url?: string
+        description?: string
+        eventTypes?: string[]
+      } | null
+      if (!body?.url) {
+        return Response.json({ error: "url is required" }, { status: 400 })
+      }
+      const invalid = assertValidEndpointUrl(body.url)
+      if (invalid) return Response.json({ error: invalid }, { status: 400 })
+      const endpoint = await createWebhookEndpoint(db, claims.teamId, {
+        ownerType: "identity",
+        ownerKey: claims.identity,
+        url: body.url,
+        ...(body.description ? { description: body.description } : {}),
+        eventTypes: body.eventTypes ?? null,
+      })
+      return Response.json({ endpoint })
+    }
+
+    const deleteMatch = path.match(/^\/webhooks\/endpoints\/([\w-]+)$/)
+    if (request.method === "DELETE" && deleteMatch) {
+      await db
+        .delete(coreWebhookEndpoint)
+        .where(and(owned, eq(coreWebhookEndpoint.id, deleteMatch[1]!)))
+      return Response.json({ deleted: true })
+    }
+
+    if (request.method === "GET" && path === "/webhooks/messages") {
+      const messages = await db
+        .select()
+        .from(coreWebhookMessage)
+        .where(
+          and(
+            eq(coreWebhookMessage.teamId, claims.teamId),
+            eq(coreWebhookMessage.ownerType, "identity"),
+            eq(coreWebhookMessage.ownerKey, claims.identity),
+          ),
+        )
+        .orderBy(desc(coreWebhookMessage.createdAt))
+        .limit(50)
+      const attempts = messages.length
+        ? await db
+            .select()
+            .from(coreWebhookAttempt)
+            .where(
+              inArray(
+                coreWebhookAttempt.messageId,
+                messages.map((message) => message.id),
+              ),
+            )
+        : []
+      return Response.json({ messages, attempts })
+    }
   }
 
   return Response.json({ error: "Not found" }, { status: 404 })

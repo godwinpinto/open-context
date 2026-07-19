@@ -7,6 +7,7 @@ export const Route = createFileRoute("/api/portal/$")({
     handlers: {
       GET: ({ request }: { request: Request }) => handlePortal(request, env),
       POST: ({ request }: { request: Request }) => handlePortal(request, env),
+      DELETE: ({ request }: { request: Request }) => handlePortal(request, env),
     },
   },
 })

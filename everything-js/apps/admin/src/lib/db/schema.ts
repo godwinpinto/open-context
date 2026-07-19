@@ -37,6 +37,11 @@ export {
   coreSegment,
   coreSegmentIdentity,
 } from "@open-context/core"
+export {
+  coreWebhookAttempt,
+  coreWebhookEndpoint,
+  coreWebhookMessage,
+} from "@open-context/core"
 
 // Module schema fragments — re-exported so drizzle-kit migrations and
 // the drizzle client cover module tables too.

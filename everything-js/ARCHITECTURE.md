@@ -151,6 +151,8 @@ mutable counter column.
 ## URL namespace (reserved prefixes)
 
 - `/`, `/dashboard`, `/onboarding`, `/two-factor`, `/device`, `/consent` — admin core
+- `/portal` — customer-facing portal (portal-token auth, no session);
+  `/api/portal/*` its API
 - `/o/$orgId/t/$teamId/...` — team-scoped UI; `manage` + `account` are
   admin's; each module owns `/o/../t/../{moduleId}/*`
 - `/api/auth/*` — better-auth (never touch)
@@ -165,6 +167,32 @@ mutable counter column.
 | CLI | device-code flow → bearer session token (`bearer()` plugin) |
 | SDKs / CI / tools | API key `x-api-key` (`oc_sk_` prefix, hashed at rest, per-key rate limits, `metadata.teamId` scope) |
 | MCP clients | OAuth 2.1 provider (dynamic registration + PKCE) |
+| End-customers (portal) | Stateless portal token `oc_pt_` — HMAC(BETTER_AUTH_SECRET)-signed claims {teamId, identity, scopes, exp}; minted by the team's backend via `POST /api/identity/v1/portal-tokens`; no DB row, revocation = expiry/secret rotation |
+
+## Portal (core) + Webhooks (module over a core engine)
+
+- Portal: `/portal?token=...` renders scope-gated panels — `meter:read`
+  → entitlement usage (OpenMeter-style), `webhooks:manage` → endpoint
+  self-service (Svix App Portal-style). API under `/api/portal/*`.
+- Webhook engine lives in core (`webhooks/{schema,sign,engine}.ts`,
+  tables `oc_webhook_endpoint|message|attempt`): one pub/sub-over-HTTP
+  outbox with three variants keyed by endpoint owner — team (platform
+  notifications), identity/group (webhooks-as-a-service, Svix's
+  "application" ≈ our identity). Standard Webhooks signing (`whsec_`
+  secrets, `webhook-id`/`-timestamp`/`-signature` headers) so standard
+  receiver libraries verify out of the box.
+- **No cron**: first attempt runs inline via `waitUntil`
+  (`cloudflare:workers` module-level export, feature-detected with a
+  fire-and-forget fallback for Node). Retries (30s→5m→30m→2h→5h→10h,
+  then exhausted) are swept opportunistically: any `/api/webhooks/v1/*`
+  traffic defers a sweep, `POST /v1/sweep` and the dashboard's
+  "Deliver due now"/Replay do it explicitly. Endpoints auto-disable
+  after 5 consecutive exhausted messages; re-enabling resets the count.
+  Cron/Queues remain a documented later option if traffic-driven
+  sweeping proves too lazy.
+- `@open-context/module-webhooks` is thin routers over the core engine
+  (consumer: send/endpoints CRUD/sweep; admin: endpoints, delivery log,
+  rotate secret, replay).
 
 ## Free-tier accounting (measured)
 

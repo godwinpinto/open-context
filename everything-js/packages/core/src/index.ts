@@ -50,6 +50,27 @@ export type {
   IdentityConsumerContext,
 } from "./identity/context"
 
+// Webhooks — one pub/sub-over-HTTP engine; endpoint owner (team vs
+// identity/group) distinguishes platform notifications from
+// webhooks-as-a-service. No cron: inline first attempt + opportunistic
+// sweeps.
+export {
+  coreWebhookAttempt,
+  coreWebhookEndpoint,
+  coreWebhookMessage,
+} from "./webhooks/schema"
+export {
+  assertValidEndpointUrl,
+  createWebhookEndpoint,
+  deliverDueWebhooks,
+  hasDueWebhooks,
+  publishWebhook,
+  replayWebhookMessage,
+  rotateWebhookSecret,
+  type WebhookOwner,
+} from "./webhooks/engine"
+export { generateWebhookSecret, signWebhook } from "./webhooks/sign"
+
 // Portal tokens — stateless HMAC-signed, the 4th auth surface.
 export {
   createPortalToken,

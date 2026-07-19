@@ -21,6 +21,7 @@ import {
   Ticket,
   UserCog,
   Users,
+  Webhook as WebhookIcon,
 } from "lucide-react"
 import { Link, useLocation, useNavigate } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
@@ -95,6 +96,7 @@ const moduleItems = [
     icon: FlaskConical,
   },
   { title: "Flags", to: "/o/$orgId/t/$teamId/flags", icon: Flag },
+  { title: "Webhooks", to: "/o/$orgId/t/$teamId/webhooks", icon: WebhookIcon },
 ] as const
 
 function initials(name: string) {
@@ -247,6 +249,19 @@ export function AppSidebar({
           icon: Flag,
           isActive: true,
           link: <Link to="/o/$orgId/t/$teamId/flags" params={linkParams} />,
+        },
+      ],
+    }
+  } else if (pathSection === "webhooks") {
+    section = {
+      id: "webhooks",
+      title: "Webhooks",
+      items: [
+        {
+          title: "Webhooks",
+          icon: WebhookIcon,
+          isActive: true,
+          link: <Link to="/o/$orgId/t/$teamId/webhooks" params={linkParams} />,
         },
       ],
     }

@@ -27,6 +27,7 @@
     "@open-context/module-flags": "workspace:*",
     "@open-context/module-meter": "workspace:*",
     "@open-context/module-trail": "workspace:*",
+    "@open-context/module-webhooks": "workspace:*",
     "@open-context/ui": "workspace:*",
     "@orpc/client": "1.14.8",
     "@orpc/openapi": "1.14.8",
