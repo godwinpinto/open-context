@@ -33,6 +33,7 @@ export {
   evaluateRules,
   explainRules,
   splitBucket,
+  variantFor,
   type SegmentCondition,
   type SegmentOperator,
   type SegmentRules,

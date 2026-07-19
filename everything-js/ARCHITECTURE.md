@@ -16,6 +16,7 @@ packages/
   modules/
     trail/            @open-context/module-trail — reference module (behavior analytics)
     meter/            @open-context/module-meter — usage metering + entitlements
+    experiments/      @open-context/module-experiments — A/B testing
   plugins/            (reserved)
 ```
 
@@ -59,10 +60,25 @@ Tables `oc_segment` + `oc_segment_identity`; two types:
   OR uuid (interchangeable via deterministic IDs; unknown keys are
   upserted).
 
-**FROZEN CONTRACT**: split bucketing is FNV-1a 32-bit over
-`segmentId:identityKey` mod 100 (segments/rules.ts). Changing it
-reshuffles every live rollout — never touch; a new algorithm is a new
-condition type.
+**FROZEN CONTRACTS** (segments/rules.ts): split bucketing is FNV-1a
+32-bit over `segmentId:identityKey` mod 100; weighted variant
+assignment (`variantFor`, used by experiments now and multivariate
+flags later) is the same FNV over `scopeId:identityKey` mod 10000
+against cumulative-weight thresholds. Changing either reshuffles live
+rollouts/experiments — never touch; a new algorithm is a new
+condition/assignment type.
+
+### Experiments module
+
+Sticky assignment via `variantFor` (no assignment storage — exposures
+recorded server-side at assign time, deduped per identity), optional
+segment targeting (non-members get null), explicit conversions via
+`POST /api/experiments/v1/goal` (only counted for exposed identities,
+first per identity). Results: per-variant conversion rates, Bayesian
+chance-to-beat-control (Beta-Binomial Monte Carlo), two-proportion
+z-test p-value, and SRM detection (chi-square on exposure counts vs
+weights; p < 0.001 flags results as unreliable). Variants are
+immutable once running.
 
 Evaluation is dynamic (no materialization): per-identity checks are
 one merged-props fetch + in-memory rule eval

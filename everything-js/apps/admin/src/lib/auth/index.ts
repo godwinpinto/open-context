@@ -89,6 +89,15 @@ export function createAuth(env: Env) {
         // Keys carry { teamId } in metadata — module consumer APIs
         // resolve their team scope from it (see lib/modules/trail.ts).
         enableMetadata: true,
+        // The plugin default is 10 req/day — unusable for SDK-facing
+        // consumer APIs (event ingest, flag/experiment assignment).
+        // NOTE: limits are stamped onto the key row at creation, so
+        // this only affects keys created after the change.
+        rateLimit: {
+          enabled: true,
+          timeWindow: 24 * 60 * 60 * 1000,
+          maxRequests: 100_000,
+        },
       }),
       // Lets the CLI (packages/cli) sign in via RFC 8628 device code flow,
       // then use the resulting session token as `Authorization: Bearer`.

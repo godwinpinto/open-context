@@ -48,6 +48,34 @@ export function splitBucket(segmentId: string, identityKey: string): number {
   }
   return hash % 100
 }
+
+// Weighted variant assignment (experiments now, multivariate flags
+// later). Same FNV-1a, finer 10000-bucket granularity, thresholds from
+// cumulative weights. Equally FROZEN: changing this reassigns every
+// running experiment's variants mid-flight.
+export function variantFor(
+  scopeId: string,
+  identityKey: string,
+  variants: { key: string; weight: number }[],
+): string {
+  const input = `${scopeId}:${identityKey}`
+  let hash = 0x811c9dc5
+  for (let index = 0; index < input.length; index++) {
+    hash ^= input.charCodeAt(index)
+    hash = Math.imul(hash, 0x01000193) >>> 0
+  }
+  const bucket = hash % 10000
+
+  const total = variants.reduce((sum, variant) => sum + variant.weight, 0)
+  let cumulative = 0
+  for (const variant of variants) {
+    cumulative += variant.weight
+    if (bucket < Math.floor((cumulative / total) * 10000)) {
+      return variant.key
+    }
+  }
+  return variants[variants.length - 1].key
+}
 // ─────────────────────────────────────────────────────────────────
 
 const REGEX_MAX_LENGTH = 200

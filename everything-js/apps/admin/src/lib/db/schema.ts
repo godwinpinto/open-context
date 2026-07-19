@@ -48,6 +48,11 @@ export {
   meterFeature,
   meterGrant,
 } from "@open-context/module-meter/schema"
+export {
+  expExperiment,
+  expExposure,
+  expGoal,
+} from "@open-context/module-experiments/schema"
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),
