@@ -1,24 +1,34 @@
 import { createServerFn } from "@tanstack/react-start"
+import { eq, and } from "drizzle-orm"
 
 import { authMiddleware } from "@/lib/auth/middleware"
+import { connector } from "@/lib/db/schema"
+import {
+  OM_EVENTS_DDL,
+  assertTeamMember,
+  clickHouseQuery,
+  decryptConfig,
+  encryptConfig,
+  readClickHouseRow,
+} from "@/lib/connectors-host"
 
 // Per-team external backends. Credentials are symmetrically encrypted
 // with the auth secret before hitting D1 and are NEVER returned by any
 // API after creation — list/test only expose non-secret fields.
 //
-// This file exports ONLY server functions (client builds see RPC
-// stubs); everything touching cloudflare:workers/secrets lives in
-// connectors-host.ts, imported inside handlers so it stays server-only.
+// The helpers come from connectors-host.ts as environment functions
+// (createServerOnlyFn) — TanStack Start's compiler strips their
+// implementations from client bundles, so these static imports are
+// client-safe.
 
 export const listTeamConnectors = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .inputValidator((data: { teamId: string }) => data)
   .handler(async ({ data, context }) => {
-    const host = await import("./connectors-host")
-    await host.assertTeamMember(context.db, context.session.user.id, data.teamId)
-    const row = await host.readClickHouseRow(context.db, data.teamId)
+    await assertTeamMember(context.db, context.session.user.id, data.teamId)
+    const row = await readClickHouseRow(context.db, data.teamId)
     if (!row) return { clickhouse: null }
-    const config = await host.decryptConfig(row.config)
+    const config = await decryptConfig(row.config)
     return {
       clickhouse: {
         id: row.id,
@@ -47,10 +57,7 @@ export const saveClickHouseConnector = createServerFn({ method: "POST" })
     }) => data,
   )
   .handler(async ({ data, context }) => {
-    const host = await import("./connectors-host")
-    const { connector } = await import("@/lib/db/schema")
-    const { eq } = await import("drizzle-orm")
-    await host.assertTeamMember(context.db, context.session.user.id, data.teamId)
+    await assertTeamMember(context.db, context.session.user.id, data.teamId)
     if (!/^https?:\/\//.test(data.url)) {
       throw new Error("URL must start with http:// or https://")
     }
@@ -58,13 +65,13 @@ export const saveClickHouseConnector = createServerFn({ method: "POST" })
       throw new Error("Database name must be alphanumeric/underscore")
     }
 
-    const existing = await host.readClickHouseRow(context.db, data.teamId)
+    const existing = await readClickHouseRow(context.db, data.teamId)
     let password = data.password ?? ""
     if (!data.password && existing) {
-      password = (await host.decryptConfig(existing.config)).password
+      password = (await decryptConfig(existing.config)).password
     }
 
-    const encrypted = await host.encryptConfig({
+    const encrypted = await encryptConfig({
       url: data.url,
       database: data.database,
       username: data.username,
@@ -95,10 +102,7 @@ export const deleteClickHouseConnector = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator((data: { teamId: string }) => data)
   .handler(async ({ data, context }) => {
-    const host = await import("./connectors-host")
-    const { connector } = await import("@/lib/db/schema")
-    const { and, eq } = await import("drizzle-orm")
-    await host.assertTeamMember(context.db, context.session.user.id, data.teamId)
+    await assertTeamMember(context.db, context.session.user.id, data.teamId)
     await context.db
       .delete(connector)
       .where(
@@ -115,24 +119,23 @@ export const testClickHouseConnector = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .inputValidator((data: { teamId: string }) => data)
   .handler(async ({ data, context }) => {
-    const host = await import("./connectors-host")
-    await host.assertTeamMember(context.db, context.session.user.id, data.teamId)
-    const row = await host.readClickHouseRow(context.db, data.teamId)
+    await assertTeamMember(context.db, context.session.user.id, data.teamId)
+    const row = await readClickHouseRow(context.db, data.teamId)
     if (!row) return { ok: false as const, error: "No connector saved" }
-    const config = await host.decryptConfig(row.config)
+    const config = await decryptConfig(row.config)
 
-    const ping = await host.clickHouseQuery(config, "SELECT version()")
+    const ping = await clickHouseQuery(config, "SELECT version()")
     if (!ping.ok) return { ok: false as const, error: ping.body }
 
-    const createDb = await host.clickHouseQuery(
+    const createDb = await clickHouseQuery(
       config,
       `CREATE DATABASE IF NOT EXISTS ${config.database}`,
     )
     if (!createDb.ok) return { ok: false as const, error: createDb.body }
 
-    const createTable = await host.clickHouseQuery(
+    const createTable = await clickHouseQuery(
       config,
-      host.OM_EVENTS_DDL(config.database),
+      OM_EVENTS_DDL(config.database),
     )
     if (!createTable.ok) return { ok: false as const, error: createTable.body }
 
