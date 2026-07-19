@@ -17,6 +17,7 @@ packages/
     trail/            @open-context/module-trail — reference module (behavior analytics)
     meter/            @open-context/module-meter — usage metering + entitlements
     experiments/      @open-context/module-experiments — A/B testing
+    flags/            @open-context/module-flags — feature flags
   plugins/            (reserved)
 ```
 
@@ -67,6 +68,21 @@ flags later) is the same FNV over `scopeId:identityKey` mod 10000
 against cumulative-weight thresholds. Changing either reshuffles live
 rollouts/experiments — never touch; a new algorithm is a new
 condition/assignment type.
+
+### Flags module
+
+Flagsmith-inspired. Flags defined per team; STATE (enabled + optional
+JSON serve value) per environment. An API key IS an environment key —
+`metadata.environment` selects it (default "production"); the host's
+consumerCallContext exposes full key metadata for such module-specific
+dimensions. Evaluation precedence: identity override → segment
+overrides (priority asc) → environment default (missing state row =
+disabled). `POST /api/flags/v1/evaluate { identity, traits? }` returns
+all flags in one call; request traits merge OVER stored merged
+properties for segment matching. Percentage rollouts = segments with
+split conditions; multivariate = Experiments module (shared variantFor
+when flags grow variants). Admin testEvaluate returns per-flag source
+attribution for debugging.
 
 ### Experiments module
 

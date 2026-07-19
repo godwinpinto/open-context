@@ -21,6 +21,8 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as DotwellKnownOauthAuthorizationServerApiAuthRouteImport } from './routes/[.]well-known/oauth-authorization-server/api/auth'
 import { Route as ApiExperimentsAdminSplatRouteImport } from './routes/api/experiments/admin/$'
 import { Route as ApiExperimentsV1SplatRouteImport } from './routes/api/experiments/v1/$'
+import { Route as ApiFlagsAdminSplatRouteImport } from './routes/api/flags/admin/$'
+import { Route as ApiFlagsV1SplatRouteImport } from './routes/api/flags/v1/$'
 import { Route as ApiIdentityAdminSplatRouteImport } from './routes/api/identity/admin/$'
 import { Route as ApiIdentityV1SplatRouteImport } from './routes/api/identity/v1/$'
 import { Route as ApiMeterAdminSplatRouteImport } from './routes/api/meter/admin/$'
@@ -38,6 +40,7 @@ import { Route as OOrgIdTTeamIdAccountProfileRouteImport } from './routes/o/$org
 import { Route as OOrgIdTTeamIdAccountSecurityRouteImport } from './routes/o/$orgId/t/$teamId/account/security'
 import { Route as OOrgIdTTeamIdAccountSessionsRouteImport } from './routes/o/$orgId/t/$teamId/account/sessions'
 import { Route as OOrgIdTTeamIdExperimentsIndexRouteImport } from './routes/o/$orgId/t/$teamId/experiments/index'
+import { Route as OOrgIdTTeamIdFlagsIndexRouteImport } from './routes/o/$orgId/t/$teamId/flags/index'
 import { Route as OOrgIdTTeamIdIdentityIndexRouteImport } from './routes/o/$orgId/t/$teamId/identity/index'
 import { Route as OOrgIdTTeamIdManageIndexRouteImport } from './routes/o/$orgId/t/$teamId/manage/index'
 import { Route as OOrgIdTTeamIdManageConnectorsRouteImport } from './routes/o/$orgId/t/$teamId/manage/connectors'
@@ -110,6 +113,16 @@ const ApiExperimentsAdminSplatRoute =
 const ApiExperimentsV1SplatRoute = ApiExperimentsV1SplatRouteImport.update({
   id: '/api/experiments/v1/$',
   path: '/api/experiments/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFlagsAdminSplatRoute = ApiFlagsAdminSplatRouteImport.update({
+  id: '/api/flags/admin/$',
+  path: '/api/flags/admin/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFlagsV1SplatRoute = ApiFlagsV1SplatRouteImport.update({
+  id: '/api/flags/v1/$',
+  path: '/api/flags/v1/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiIdentityAdminSplatRoute = ApiIdentityAdminSplatRouteImport.update({
@@ -205,6 +218,11 @@ const OOrgIdTTeamIdExperimentsIndexRoute =
     path: '/experiments/',
     getParentRoute: () => OOrgIdTTeamIdRouteRoute,
   } as any)
+const OOrgIdTTeamIdFlagsIndexRoute = OOrgIdTTeamIdFlagsIndexRouteImport.update({
+  id: '/flags/',
+  path: '/flags/',
+  getParentRoute: () => OOrgIdTTeamIdRouteRoute,
+} as any)
 const OOrgIdTTeamIdIdentityIndexRoute =
   OOrgIdTTeamIdIdentityIndexRouteImport.update({
     id: '/identity/',
@@ -272,6 +290,8 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
+  '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
+  '/api/flags/v1/$': typeof ApiFlagsV1SplatRoute
   '/api/identity/admin/$': typeof ApiIdentityAdminSplatRoute
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
@@ -292,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/experiments/': typeof OOrgIdTTeamIdExperimentsIndexRoute
+  '/o/$orgId/t/$teamId/flags/': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
@@ -311,6 +332,8 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
+  '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
+  '/api/flags/v1/$': typeof ApiFlagsV1SplatRoute
   '/api/identity/admin/$': typeof ApiIdentityAdminSplatRoute
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
@@ -329,6 +352,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/experiments': typeof OOrgIdTTeamIdExperimentsIndexRoute
+  '/o/$orgId/t/$teamId/flags': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter': typeof OOrgIdTTeamIdMeterIndexRoute
@@ -350,6 +374,8 @@ export interface FileRoutesById {
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
+  '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
+  '/api/flags/v1/$': typeof ApiFlagsV1SplatRoute
   '/api/identity/admin/$': typeof ApiIdentityAdminSplatRoute
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
@@ -370,6 +396,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
   '/o/$orgId/t/$teamId/experiments/': typeof OOrgIdTTeamIdExperimentsIndexRoute
+  '/o/$orgId/t/$teamId/flags/': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
@@ -392,6 +419,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
+    | '/api/flags/admin/$'
+    | '/api/flags/v1/$'
     | '/api/identity/admin/$'
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
@@ -412,6 +441,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account/'
     | '/o/$orgId/t/$teamId/experiments/'
+    | '/o/$orgId/t/$teamId/flags/'
     | '/o/$orgId/t/$teamId/identity/'
     | '/o/$orgId/t/$teamId/manage/'
     | '/o/$orgId/t/$teamId/meter/'
@@ -431,6 +461,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
+    | '/api/flags/admin/$'
+    | '/api/flags/v1/$'
     | '/api/identity/admin/$'
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
@@ -449,6 +481,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account'
     | '/o/$orgId/t/$teamId/experiments'
+    | '/o/$orgId/t/$teamId/flags'
     | '/o/$orgId/t/$teamId/identity'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/meter'
@@ -469,6 +502,8 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-authorization-server/api/auth'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
+    | '/api/flags/admin/$'
+    | '/api/flags/v1/$'
     | '/api/identity/admin/$'
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
@@ -489,6 +524,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account/'
     | '/o/$orgId/t/$teamId/experiments/'
+    | '/o/$orgId/t/$teamId/flags/'
     | '/o/$orgId/t/$teamId/identity/'
     | '/o/$orgId/t/$teamId/manage/'
     | '/o/$orgId/t/$teamId/meter/'
@@ -509,6 +545,8 @@ export interface RootRouteChildren {
   OOrgIdTTeamIdRouteRoute: typeof OOrgIdTTeamIdRouteRouteWithChildren
   ApiExperimentsAdminSplatRoute: typeof ApiExperimentsAdminSplatRoute
   ApiExperimentsV1SplatRoute: typeof ApiExperimentsV1SplatRoute
+  ApiFlagsAdminSplatRoute: typeof ApiFlagsAdminSplatRoute
+  ApiFlagsV1SplatRoute: typeof ApiFlagsV1SplatRoute
   ApiIdentityAdminSplatRoute: typeof ApiIdentityAdminSplatRoute
   ApiIdentityV1SplatRoute: typeof ApiIdentityV1SplatRoute
   ApiMeterAdminSplatRoute: typeof ApiMeterAdminSplatRoute
@@ -602,6 +640,20 @@ declare module '@tanstack/react-router' {
       path: '/api/experiments/v1/$'
       fullPath: '/api/experiments/v1/$'
       preLoaderRoute: typeof ApiExperimentsV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/flags/admin/$': {
+      id: '/api/flags/admin/$'
+      path: '/api/flags/admin/$'
+      fullPath: '/api/flags/admin/$'
+      preLoaderRoute: typeof ApiFlagsAdminSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/flags/v1/$': {
+      id: '/api/flags/v1/$'
+      path: '/api/flags/v1/$'
+      fullPath: '/api/flags/v1/$'
+      preLoaderRoute: typeof ApiFlagsV1SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/identity/admin/$': {
@@ -721,6 +773,13 @@ declare module '@tanstack/react-router' {
       path: '/experiments'
       fullPath: '/o/$orgId/t/$teamId/experiments/'
       preLoaderRoute: typeof OOrgIdTTeamIdExperimentsIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
+    '/o/$orgId/t/$teamId/flags/': {
+      id: '/o/$orgId/t/$teamId/flags/'
+      path: '/flags'
+      fullPath: '/o/$orgId/t/$teamId/flags/'
+      preLoaderRoute: typeof OOrgIdTTeamIdFlagsIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdRouteRoute
     }
     '/o/$orgId/t/$teamId/identity/': {
@@ -854,6 +913,7 @@ interface OOrgIdTTeamIdRouteRouteChildren {
   OOrgIdTTeamIdManageRouteRoute: typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   OOrgIdTTeamIdIndexRoute: typeof OOrgIdTTeamIdIndexRoute
   OOrgIdTTeamIdExperimentsIndexRoute: typeof OOrgIdTTeamIdExperimentsIndexRoute
+  OOrgIdTTeamIdFlagsIndexRoute: typeof OOrgIdTTeamIdFlagsIndexRoute
   OOrgIdTTeamIdIdentityIndexRoute: typeof OOrgIdTTeamIdIdentityIndexRoute
   OOrgIdTTeamIdMeterIndexRoute: typeof OOrgIdTTeamIdMeterIndexRoute
   OOrgIdTTeamIdSegmentsIndexRoute: typeof OOrgIdTTeamIdSegmentsIndexRoute
@@ -865,6 +925,7 @@ const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
   OOrgIdTTeamIdManageRouteRoute: OOrgIdTTeamIdManageRouteRouteWithChildren,
   OOrgIdTTeamIdIndexRoute: OOrgIdTTeamIdIndexRoute,
   OOrgIdTTeamIdExperimentsIndexRoute: OOrgIdTTeamIdExperimentsIndexRoute,
+  OOrgIdTTeamIdFlagsIndexRoute: OOrgIdTTeamIdFlagsIndexRoute,
   OOrgIdTTeamIdIdentityIndexRoute: OOrgIdTTeamIdIdentityIndexRoute,
   OOrgIdTTeamIdMeterIndexRoute: OOrgIdTTeamIdMeterIndexRoute,
   OOrgIdTTeamIdSegmentsIndexRoute: OOrgIdTTeamIdSegmentsIndexRoute,
@@ -888,6 +949,8 @@ const rootRouteChildren: RootRouteChildren = {
   OOrgIdTTeamIdRouteRoute: OOrgIdTTeamIdRouteRouteWithChildren,
   ApiExperimentsAdminSplatRoute: ApiExperimentsAdminSplatRoute,
   ApiExperimentsV1SplatRoute: ApiExperimentsV1SplatRoute,
+  ApiFlagsAdminSplatRoute: ApiFlagsAdminSplatRoute,
+  ApiFlagsV1SplatRoute: ApiFlagsV1SplatRoute,
   ApiIdentityAdminSplatRoute: ApiIdentityAdminSplatRoute,
   ApiIdentityV1SplatRoute: ApiIdentityV1SplatRoute,
   ApiMeterAdminSplatRoute: ApiMeterAdminSplatRoute,

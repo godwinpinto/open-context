@@ -24,6 +24,7 @@
     "@fontsource-variable/geist": "^5.2.9",
     "@open-context/core": "workspace:*",
     "@open-context/module-experiments": "workspace:*",
+    "@open-context/module-flags": "workspace:*",
     "@open-context/module-meter": "workspace:*",
     "@open-context/module-trail": "workspace:*",
     "@open-context/ui": "workspace:*",

@@ -53,6 +53,13 @@ export {
   expExposure,
   expGoal,
 } from "@open-context/module-experiments/schema"
+export {
+  flag,
+  flagEnvironment,
+  flagIdentityOverride,
+  flagSegmentOverride,
+  flagState,
+} from "@open-context/module-flags/schema"
 
 export const user = sqliteTable("user", {
   id: text("id").primaryKey(),

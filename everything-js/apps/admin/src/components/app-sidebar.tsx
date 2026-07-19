@@ -3,6 +3,7 @@ import {
   ChevronsUpDown,
   Filter,
   Fingerprint,
+  Flag,
   FlaskConical,
   Footprints,
   Gauge,
@@ -291,6 +292,20 @@ export function AppSidebar({
                 >
                   <FlaskConical />
                   <span>Experiments</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      to="/o/$orgId/t/$teamId/flags"
+                      params={{ orgId: organization.id, teamId: team.id }}
+                    />
+                  }
+                  tooltip="Flags"
+                >
+                  <Flag />
+                  <span>Flags</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -28,11 +28,13 @@ export async function resolveIdentityId(
 
 // The module-facing filter primitive: which segments is this identity
 // in? One merged-props fetch + one membership query, dynamic rules
-// evaluated in memory.
+// evaluated in memory. `extraTraits` (e.g. request-passed traits on a
+// flags evaluate call) merge OVER stored merged properties.
 export async function identityInSegments(
   db: CoreDatabase,
   teamId: string,
   identityKey: string,
+  extraTraits?: Record<string, unknown>,
 ): Promise<string[]> {
   const segments = await db
     .select()
@@ -45,10 +47,11 @@ export async function identityInSegments(
   const dynamic = segments.filter((s) => s.type === "dynamic" && s.rules)
   if (dynamic.length > 0) {
     const merged = await getMergedProperties(db, teamId, identityKey)
+    const properties = extraTraits
+      ? { ...merged.properties, ...extraTraits }
+      : merged.properties
     for (const segment of dynamic) {
-      if (
-        evaluateRules(segment.rules!, merged.properties, identityKey, segment.id)
-      ) {
+      if (evaluateRules(segment.rules!, properties, identityKey, segment.id)) {
         matched.push(segment.key)
       }
     }

@@ -59,6 +59,9 @@ export async function adminCallContext(
 export type ConsumerCallContext = {
   db: ReturnType<typeof getDb>
   teamId: string
+  // Full key metadata for module-specific dimensions (e.g. flags reads
+  // metadata.environment — a key IS an environment key).
+  keyMetadata: Record<string, unknown>
 }
 
 // API-key-authenticated (consumer surface). Team scope comes from the
@@ -78,12 +81,13 @@ export async function consumerCallContext(
   const { valid, key: apiKey } = await auth.api.verifyApiKey({
     body: { key },
   })
-  const teamId = (apiKey?.metadata as { teamId?: string } | null)?.teamId
+  const metadata = (apiKey?.metadata ?? {}) as Record<string, unknown>
+  const teamId = typeof metadata.teamId === "string" ? metadata.teamId : null
   if (!valid || !teamId) {
     return Response.json(
       { error: "Invalid API key or key not scoped to a team" },
       { status: 401 },
     )
   }
-  return { db: getDb(env), teamId }
+  return { db: getDb(env), teamId, keyMetadata: metadata }
 }

@@ -32,6 +32,9 @@ importers:
       '@open-context/module-experiments':
         specifier: workspace:*
         version: link:../../packages/modules/experiments
+      '@open-context/module-flags':
+        specifier: workspace:*
+        version: link:../../packages/modules/flags
       '@open-context/module-meter':
         specifier: workspace:*
         version: link:../../packages/modules/meter
@@ -202,6 +205,25 @@ importers:
         version: 5.9.3
 
   packages/modules/experiments:
+    dependencies:
+      '@open-context/core':
+        specifier: workspace:*
+        version: link:../../core
+      '@orpc/server':
+        specifier: 1.14.8
+        version: 1.14.8(ws@8.21.1)
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(kysely@0.29.3)
+      zod:
+        specifier: ^4.0.0
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+
+  packages/modules/flags:
     dependencies:
       '@open-context/core':
         specifier: workspace:*
