@@ -11,6 +11,7 @@ import {
   createD1EventStore,
   meterAdminRouter,
 } from "@open-context/module-meter"
+import { dashboardsAdminRouter } from "@open-context/module-dashboards"
 import { experimentsAdminRouter } from "@open-context/module-experiments"
 import { flagsAdminRouter } from "@open-context/module-flags"
 
@@ -195,6 +196,109 @@ export function buildServer(env: Env, user: AuthedUser): McpServer {
         await call(
           flagsAdminRouter.setState,
           { teamId, flagKey, environmentKey, enabled },
+          { context: adminCtx },
+        ),
+      ),
+  )
+
+  // ——— Dashboards: the natural-language authoring surface. Panels can
+  // ONLY be created here (the UI views/arranges) — the flow is
+  // list_sources → preview_query (iterate until the data looks right)
+  // → save_panel with a chart type. ———
+
+  server.registerTool(
+    "dashboards_list",
+    {
+      description:
+        "List a team's dashboards (id, name, panel count). Create panels on one of these with dashboards_save_panel.",
+      inputSchema: { teamId: z.string() },
+    },
+    async ({ teamId }) =>
+      text(await call(dashboardsAdminRouter.listDashboards, { teamId }, { context: adminCtx })),
+  )
+
+  server.registerTool(
+    "dashboards_create",
+    {
+      description: "Create a new (empty) dashboard for a team.",
+      inputSchema: { teamId: z.string(), name: z.string() },
+    },
+    async ({ teamId, name }) =>
+      text(await call(dashboardsAdminRouter.createDashboard, { teamId, name }, { context: adminCtx })),
+  )
+
+  server.registerTool(
+    "dashboards_list_sources",
+    {
+      description:
+        "Catalog of queryable sources (tables) for dashboard panels: names, columns, types, and query notes. Call before writing panel SQL. Sources are pre-scoped to the team and pre-filtered to the dashboard's global time range — never add team or time filters yourself.",
+      inputSchema: { teamId: z.string() },
+    },
+    async ({ teamId }) =>
+      text(await call(dashboardsAdminRouter.listSources, { teamId }, { context: adminCtx })),
+  )
+
+  server.registerTool(
+    "dashboards_preview_query",
+    {
+      description:
+        "Execute panel SQL (SQLite SELECT over the sources from dashboards_list_sources) and return rows or the error. Iterate here until the result matches what the user asked for, THEN save with dashboards_save_panel. fromMs/toMs simulate the dashboard's global time-range filter (unix ms).",
+      inputSchema: {
+        teamId: z.string(),
+        sql: z.string(),
+        fromMs: z.number().optional(),
+        toMs: z.number().optional(),
+      },
+    },
+    async ({ teamId, sql, fromMs, toMs }) =>
+      text(
+        await call(
+          dashboardsAdminRouter.previewQuery,
+          {
+            teamId,
+            sql,
+            range: {
+              fromMs: fromMs ?? Date.now() - 7 * 86400_000,
+              toMs: toMs ?? Date.now(),
+            },
+          },
+          { context: adminCtx },
+        ),
+      ),
+  )
+
+  server.registerTool(
+    "dashboards_save_panel",
+    {
+      description:
+        "Save a previewed query as a dashboard panel. chartType: line/bar/area (needs xKey + yKeys), stat (needs valueKey), pie (xKey = label, valueKey = value), table (no keys needed). Keys must be column names from the query result. The panel lands on the dashboard grid; the user arranges/resizes it in the UI.",
+      inputSchema: {
+        teamId: z.string(),
+        dashboardId: z.string(),
+        title: z.string(),
+        chartType: z.enum(["line", "bar", "area", "stat", "table", "pie"]),
+        sql: z.string(),
+        xKey: z.string().optional(),
+        yKeys: z.array(z.string()).optional(),
+        valueKey: z.string().optional(),
+      },
+    },
+    async ({ teamId, dashboardId, title, chartType, sql, xKey, yKeys, valueKey }) =>
+      text(
+        await call(
+          dashboardsAdminRouter.savePanel,
+          {
+            teamId,
+            dashboardId,
+            title,
+            chartType,
+            sql,
+            config: {
+              ...(xKey ? { xKey } : {}),
+              ...(yKeys ? { yKeys } : {}),
+              ...(valueKey ? { valueKey } : {}),
+            },
+          },
           { context: adminCtx },
         ),
       ),

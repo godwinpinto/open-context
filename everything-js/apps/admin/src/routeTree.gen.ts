@@ -21,7 +21,9 @@ import { Route as OnboardingOrganizationRouteImport } from './routes/onboarding/
 import { Route as PortalIndexRouteImport } from './routes/portal/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiPortalSplatRouteImport } from './routes/api/portal/$'
+import { Route as ShareDTokenRouteImport } from './routes/share/d/$token'
 import { Route as DotwellKnownOauthAuthorizationServerApiAuthRouteImport } from './routes/[.]well-known/oauth-authorization-server/api/auth'
+import { Route as ApiDashboardsAdminSplatRouteImport } from './routes/api/dashboards/admin/$'
 import { Route as ApiExperimentsAdminSplatRouteImport } from './routes/api/experiments/admin/$'
 import { Route as ApiExperimentsV1SplatRouteImport } from './routes/api/experiments/v1/$'
 import { Route as ApiFlagsAdminSplatRouteImport } from './routes/api/flags/admin/$'
@@ -31,6 +33,7 @@ import { Route as ApiIdentityV1SplatRouteImport } from './routes/api/identity/v1
 import { Route as ApiMeterAdminSplatRouteImport } from './routes/api/meter/admin/$'
 import { Route as ApiMeterV1SplatRouteImport } from './routes/api/meter/v1/$'
 import { Route as ApiSegmentsAdminSplatRouteImport } from './routes/api/segments/admin/$'
+import { Route as ApiShareDSplatRouteImport } from './routes/api/share/d/$'
 import { Route as ApiTrailAdminSplatRouteImport } from './routes/api/trail/admin/$'
 import { Route as ApiTrailV1SplatRouteImport } from './routes/api/trail/v1/$'
 import { Route as ApiWebhooksAdminSplatRouteImport } from './routes/api/webhooks/admin/$'
@@ -44,6 +47,7 @@ import { Route as OOrgIdTTeamIdAccountConnectedAppsRouteImport } from './routes/
 import { Route as OOrgIdTTeamIdAccountProfileRouteImport } from './routes/o/$orgId/t/$teamId/account/profile'
 import { Route as OOrgIdTTeamIdAccountSecurityRouteImport } from './routes/o/$orgId/t/$teamId/account/security'
 import { Route as OOrgIdTTeamIdAccountSessionsRouteImport } from './routes/o/$orgId/t/$teamId/account/sessions'
+import { Route as OOrgIdTTeamIdDashboardsIndexRouteImport } from './routes/o/$orgId/t/$teamId/dashboards/index'
 import { Route as OOrgIdTTeamIdExperimentsIndexRouteImport } from './routes/o/$orgId/t/$teamId/experiments/index'
 import { Route as OOrgIdTTeamIdFlagsIndexRouteImport } from './routes/o/$orgId/t/$teamId/flags/index'
 import { Route as OOrgIdTTeamIdIdentityIndexRouteImport } from './routes/o/$orgId/t/$teamId/identity/index'
@@ -57,6 +61,7 @@ import { Route as OOrgIdTTeamIdMeterIndexRouteImport } from './routes/o/$orgId/t
 import { Route as OOrgIdTTeamIdSegmentsIndexRouteImport } from './routes/o/$orgId/t/$teamId/segments/index'
 import { Route as OOrgIdTTeamIdTrailIndexRouteImport } from './routes/o/$orgId/t/$teamId/trail/index'
 import { Route as OOrgIdTTeamIdWebhooksIndexRouteImport } from './routes/o/$orgId/t/$teamId/webhooks/index'
+import { Route as OOrgIdTTeamIdDashboardsDashboardIdIndexRouteImport } from './routes/o/$orgId/t/$teamId/dashboards/$dashboardId/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -121,12 +126,22 @@ const ApiPortalSplatRoute = ApiPortalSplatRouteImport.update({
   path: '/api/portal/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareDTokenRoute = ShareDTokenRouteImport.update({
+  id: '/share/d/$token',
+  path: '/share/d/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotwellKnownOauthAuthorizationServerApiAuthRoute =
   DotwellKnownOauthAuthorizationServerApiAuthRouteImport.update({
     id: '/api/auth',
     path: '/api/auth',
     getParentRoute: () => DotwellKnownOauthAuthorizationServerRoute,
   } as any)
+const ApiDashboardsAdminSplatRoute = ApiDashboardsAdminSplatRouteImport.update({
+  id: '/api/dashboards/admin/$',
+  path: '/api/dashboards/admin/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiExperimentsAdminSplatRoute =
   ApiExperimentsAdminSplatRouteImport.update({
     id: '/api/experiments/admin/$',
@@ -171,6 +186,11 @@ const ApiMeterV1SplatRoute = ApiMeterV1SplatRouteImport.update({
 const ApiSegmentsAdminSplatRoute = ApiSegmentsAdminSplatRouteImport.update({
   id: '/api/segments/admin/$',
   path: '/api/segments/admin/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiShareDSplatRoute = ApiShareDSplatRouteImport.update({
+  id: '/api/share/d/$',
+  path: '/api/share/d/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTrailAdminSplatRoute = ApiTrailAdminSplatRouteImport.update({
@@ -244,6 +264,12 @@ const OOrgIdTTeamIdAccountSessionsRoute =
     id: '/sessions',
     path: '/sessions',
     getParentRoute: () => OOrgIdTTeamIdAccountRouteRoute,
+  } as any)
+const OOrgIdTTeamIdDashboardsIndexRoute =
+  OOrgIdTTeamIdDashboardsIndexRouteImport.update({
+    id: '/dashboards/',
+    path: '/dashboards/',
+    getParentRoute: () => OOrgIdTTeamIdRouteRoute,
   } as any)
 const OOrgIdTTeamIdExperimentsIndexRoute =
   OOrgIdTTeamIdExperimentsIndexRouteImport.update({
@@ -320,6 +346,12 @@ const OOrgIdTTeamIdWebhooksIndexRoute =
     path: '/webhooks/',
     getParentRoute: () => OOrgIdTTeamIdRouteRoute,
   } as any)
+const OOrgIdTTeamIdDashboardsDashboardIdIndexRoute =
+  OOrgIdTTeamIdDashboardsDashboardIdIndexRouteImport.update({
+    id: '/dashboards/$dashboardId/',
+    path: '/dashboards/$dashboardId/',
+    getParentRoute: () => OOrgIdTTeamIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -334,8 +366,10 @@ export interface FileRoutesByFullPath {
   '/portal/': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/portal/$': typeof ApiPortalSplatRoute
+  '/share/d/$token': typeof ShareDTokenRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
+  '/api/dashboards/admin/$': typeof ApiDashboardsAdminSplatRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
   '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
@@ -345,6 +379,7 @@ export interface FileRoutesByFullPath {
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
+  '/api/share/d/$': typeof ApiShareDSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
@@ -362,6 +397,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
+  '/o/$orgId/t/$teamId/dashboards/': typeof OOrgIdTTeamIdDashboardsIndexRoute
   '/o/$orgId/t/$teamId/experiments/': typeof OOrgIdTTeamIdExperimentsIndexRoute
   '/o/$orgId/t/$teamId/flags/': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
@@ -370,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
   '/o/$orgId/t/$teamId/webhooks/': typeof OOrgIdTTeamIdWebhooksIndexRoute
+  '/o/$orgId/t/$teamId/dashboards/$dashboardId/': typeof OOrgIdTTeamIdDashboardsDashboardIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -384,7 +421,9 @@ export interface FileRoutesByTo {
   '/portal': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/portal/$': typeof ApiPortalSplatRoute
+  '/share/d/$token': typeof ShareDTokenRoute
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
+  '/api/dashboards/admin/$': typeof ApiDashboardsAdminSplatRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
   '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
@@ -394,6 +433,7 @@ export interface FileRoutesByTo {
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
+  '/api/share/d/$': typeof ApiShareDSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
@@ -409,6 +449,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountIndexRoute
+  '/o/$orgId/t/$teamId/dashboards': typeof OOrgIdTTeamIdDashboardsIndexRoute
   '/o/$orgId/t/$teamId/experiments': typeof OOrgIdTTeamIdExperimentsIndexRoute
   '/o/$orgId/t/$teamId/flags': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity': typeof OOrgIdTTeamIdIdentityIndexRoute
@@ -417,6 +458,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/segments': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail': typeof OOrgIdTTeamIdTrailIndexRoute
   '/o/$orgId/t/$teamId/webhooks': typeof OOrgIdTTeamIdWebhooksIndexRoute
+  '/o/$orgId/t/$teamId/dashboards/$dashboardId': typeof OOrgIdTTeamIdDashboardsDashboardIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -432,8 +474,10 @@ export interface FileRoutesById {
   '/portal/': typeof PortalIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/portal/$': typeof ApiPortalSplatRoute
+  '/share/d/$token': typeof ShareDTokenRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdRouteRouteWithChildren
   '/.well-known/oauth-authorization-server/api/auth': typeof DotwellKnownOauthAuthorizationServerApiAuthRoute
+  '/api/dashboards/admin/$': typeof ApiDashboardsAdminSplatRoute
   '/api/experiments/admin/$': typeof ApiExperimentsAdminSplatRoute
   '/api/experiments/v1/$': typeof ApiExperimentsV1SplatRoute
   '/api/flags/admin/$': typeof ApiFlagsAdminSplatRoute
@@ -443,6 +487,7 @@ export interface FileRoutesById {
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
   '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
+  '/api/share/d/$': typeof ApiShareDSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/api/webhooks/admin/$': typeof ApiWebhooksAdminSplatRoute
@@ -460,6 +505,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
   '/o/$orgId/t/$teamId/manage/teams': typeof OOrgIdTTeamIdManageTeamsRoute
   '/o/$orgId/t/$teamId/account/': typeof OOrgIdTTeamIdAccountIndexRoute
+  '/o/$orgId/t/$teamId/dashboards/': typeof OOrgIdTTeamIdDashboardsIndexRoute
   '/o/$orgId/t/$teamId/experiments/': typeof OOrgIdTTeamIdExperimentsIndexRoute
   '/o/$orgId/t/$teamId/flags/': typeof OOrgIdTTeamIdFlagsIndexRoute
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
@@ -468,6 +514,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
   '/o/$orgId/t/$teamId/webhooks/': typeof OOrgIdTTeamIdWebhooksIndexRoute
+  '/o/$orgId/t/$teamId/dashboards/$dashboardId/': typeof OOrgIdTTeamIdDashboardsDashboardIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -484,8 +531,10 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/api/auth/$'
     | '/api/portal/$'
+    | '/share/d/$token'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
+    | '/api/dashboards/admin/$'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
     | '/api/flags/admin/$'
@@ -495,6 +544,7 @@ export interface FileRouteTypes {
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
     | '/api/segments/admin/$'
+    | '/api/share/d/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/api/webhooks/admin/$'
@@ -512,6 +562,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account/'
+    | '/o/$orgId/t/$teamId/dashboards/'
     | '/o/$orgId/t/$teamId/experiments/'
     | '/o/$orgId/t/$teamId/flags/'
     | '/o/$orgId/t/$teamId/identity/'
@@ -520,6 +571,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
     | '/o/$orgId/t/$teamId/webhooks/'
+    | '/o/$orgId/t/$teamId/dashboards/$dashboardId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -534,7 +586,9 @@ export interface FileRouteTypes {
     | '/portal'
     | '/api/auth/$'
     | '/api/portal/$'
+    | '/share/d/$token'
     | '/.well-known/oauth-authorization-server/api/auth'
+    | '/api/dashboards/admin/$'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
     | '/api/flags/admin/$'
@@ -544,6 +598,7 @@ export interface FileRouteTypes {
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
     | '/api/segments/admin/$'
+    | '/api/share/d/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/api/webhooks/admin/$'
@@ -559,6 +614,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account'
+    | '/o/$orgId/t/$teamId/dashboards'
     | '/o/$orgId/t/$teamId/experiments'
     | '/o/$orgId/t/$teamId/flags'
     | '/o/$orgId/t/$teamId/identity'
@@ -567,6 +623,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/segments'
     | '/o/$orgId/t/$teamId/trail'
     | '/o/$orgId/t/$teamId/webhooks'
+    | '/o/$orgId/t/$teamId/dashboards/$dashboardId'
   id:
     | '__root__'
     | '/'
@@ -581,8 +638,10 @@ export interface FileRouteTypes {
     | '/portal/'
     | '/api/auth/$'
     | '/api/portal/$'
+    | '/share/d/$token'
     | '/o/$orgId/t/$teamId'
     | '/.well-known/oauth-authorization-server/api/auth'
+    | '/api/dashboards/admin/$'
     | '/api/experiments/admin/$'
     | '/api/experiments/v1/$'
     | '/api/flags/admin/$'
@@ -592,6 +651,7 @@ export interface FileRouteTypes {
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
     | '/api/segments/admin/$'
+    | '/api/share/d/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/api/webhooks/admin/$'
@@ -609,6 +669,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/manage/roles'
     | '/o/$orgId/t/$teamId/manage/teams'
     | '/o/$orgId/t/$teamId/account/'
+    | '/o/$orgId/t/$teamId/dashboards/'
     | '/o/$orgId/t/$teamId/experiments/'
     | '/o/$orgId/t/$teamId/flags/'
     | '/o/$orgId/t/$teamId/identity/'
@@ -617,6 +678,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
     | '/o/$orgId/t/$teamId/webhooks/'
+    | '/o/$orgId/t/$teamId/dashboards/$dashboardId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -632,7 +694,9 @@ export interface RootRouteChildren {
   PortalIndexRoute: typeof PortalIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiPortalSplatRoute: typeof ApiPortalSplatRoute
+  ShareDTokenRoute: typeof ShareDTokenRoute
   OOrgIdTTeamIdRouteRoute: typeof OOrgIdTTeamIdRouteRouteWithChildren
+  ApiDashboardsAdminSplatRoute: typeof ApiDashboardsAdminSplatRoute
   ApiExperimentsAdminSplatRoute: typeof ApiExperimentsAdminSplatRoute
   ApiExperimentsV1SplatRoute: typeof ApiExperimentsV1SplatRoute
   ApiFlagsAdminSplatRoute: typeof ApiFlagsAdminSplatRoute
@@ -642,6 +706,7 @@ export interface RootRouteChildren {
   ApiMeterAdminSplatRoute: typeof ApiMeterAdminSplatRoute
   ApiMeterV1SplatRoute: typeof ApiMeterV1SplatRoute
   ApiSegmentsAdminSplatRoute: typeof ApiSegmentsAdminSplatRoute
+  ApiShareDSplatRoute: typeof ApiShareDSplatRoute
   ApiTrailAdminSplatRoute: typeof ApiTrailAdminSplatRoute
   ApiTrailV1SplatRoute: typeof ApiTrailV1SplatRoute
   ApiWebhooksAdminSplatRoute: typeof ApiWebhooksAdminSplatRoute
@@ -734,12 +799,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPortalSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/d/$token': {
+      id: '/share/d/$token'
+      path: '/share/d/$token'
+      fullPath: '/share/d/$token'
+      preLoaderRoute: typeof ShareDTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.well-known/oauth-authorization-server/api/auth': {
       id: '/.well-known/oauth-authorization-server/api/auth'
       path: '/api/auth'
       fullPath: '/.well-known/oauth-authorization-server/api/auth'
       preLoaderRoute: typeof DotwellKnownOauthAuthorizationServerApiAuthRouteImport
       parentRoute: typeof DotwellKnownOauthAuthorizationServerRoute
+    }
+    '/api/dashboards/admin/$': {
+      id: '/api/dashboards/admin/$'
+      path: '/api/dashboards/admin/$'
+      fullPath: '/api/dashboards/admin/$'
+      preLoaderRoute: typeof ApiDashboardsAdminSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/experiments/admin/$': {
       id: '/api/experiments/admin/$'
@@ -802,6 +881,13 @@ declare module '@tanstack/react-router' {
       path: '/api/segments/admin/$'
       fullPath: '/api/segments/admin/$'
       preLoaderRoute: typeof ApiSegmentsAdminSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/share/d/$': {
+      id: '/api/share/d/$'
+      path: '/api/share/d/$'
+      fullPath: '/api/share/d/$'
+      preLoaderRoute: typeof ApiShareDSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/trail/admin/$': {
@@ -895,6 +981,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdAccountSessionsRouteImport
       parentRoute: typeof OOrgIdTTeamIdAccountRouteRoute
     }
+    '/o/$orgId/t/$teamId/dashboards/': {
+      id: '/o/$orgId/t/$teamId/dashboards/'
+      path: '/dashboards'
+      fullPath: '/o/$orgId/t/$teamId/dashboards/'
+      preLoaderRoute: typeof OOrgIdTTeamIdDashboardsIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
     '/o/$orgId/t/$teamId/experiments/': {
       id: '/o/$orgId/t/$teamId/experiments/'
       path: '/experiments'
@@ -986,6 +1079,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdWebhooksIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdRouteRoute
     }
+    '/o/$orgId/t/$teamId/dashboards/$dashboardId/': {
+      id: '/o/$orgId/t/$teamId/dashboards/$dashboardId/'
+      path: '/dashboards/$dashboardId'
+      fullPath: '/o/$orgId/t/$teamId/dashboards/$dashboardId/'
+      preLoaderRoute: typeof OOrgIdTTeamIdDashboardsDashboardIdIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
   }
 }
 
@@ -1055,6 +1155,7 @@ interface OOrgIdTTeamIdRouteRouteChildren {
   OOrgIdTTeamIdAccountRouteRoute: typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
   OOrgIdTTeamIdManageRouteRoute: typeof OOrgIdTTeamIdManageRouteRouteWithChildren
   OOrgIdTTeamIdIndexRoute: typeof OOrgIdTTeamIdIndexRoute
+  OOrgIdTTeamIdDashboardsIndexRoute: typeof OOrgIdTTeamIdDashboardsIndexRoute
   OOrgIdTTeamIdExperimentsIndexRoute: typeof OOrgIdTTeamIdExperimentsIndexRoute
   OOrgIdTTeamIdFlagsIndexRoute: typeof OOrgIdTTeamIdFlagsIndexRoute
   OOrgIdTTeamIdIdentityIndexRoute: typeof OOrgIdTTeamIdIdentityIndexRoute
@@ -1062,12 +1163,14 @@ interface OOrgIdTTeamIdRouteRouteChildren {
   OOrgIdTTeamIdSegmentsIndexRoute: typeof OOrgIdTTeamIdSegmentsIndexRoute
   OOrgIdTTeamIdTrailIndexRoute: typeof OOrgIdTTeamIdTrailIndexRoute
   OOrgIdTTeamIdWebhooksIndexRoute: typeof OOrgIdTTeamIdWebhooksIndexRoute
+  OOrgIdTTeamIdDashboardsDashboardIdIndexRoute: typeof OOrgIdTTeamIdDashboardsDashboardIdIndexRoute
 }
 
 const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
   OOrgIdTTeamIdAccountRouteRoute: OOrgIdTTeamIdAccountRouteRouteWithChildren,
   OOrgIdTTeamIdManageRouteRoute: OOrgIdTTeamIdManageRouteRouteWithChildren,
   OOrgIdTTeamIdIndexRoute: OOrgIdTTeamIdIndexRoute,
+  OOrgIdTTeamIdDashboardsIndexRoute: OOrgIdTTeamIdDashboardsIndexRoute,
   OOrgIdTTeamIdExperimentsIndexRoute: OOrgIdTTeamIdExperimentsIndexRoute,
   OOrgIdTTeamIdFlagsIndexRoute: OOrgIdTTeamIdFlagsIndexRoute,
   OOrgIdTTeamIdIdentityIndexRoute: OOrgIdTTeamIdIdentityIndexRoute,
@@ -1075,6 +1178,8 @@ const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
   OOrgIdTTeamIdSegmentsIndexRoute: OOrgIdTTeamIdSegmentsIndexRoute,
   OOrgIdTTeamIdTrailIndexRoute: OOrgIdTTeamIdTrailIndexRoute,
   OOrgIdTTeamIdWebhooksIndexRoute: OOrgIdTTeamIdWebhooksIndexRoute,
+  OOrgIdTTeamIdDashboardsDashboardIdIndexRoute:
+    OOrgIdTTeamIdDashboardsDashboardIdIndexRoute,
 }
 
 const OOrgIdTTeamIdRouteRouteWithChildren =
@@ -1095,7 +1200,9 @@ const rootRouteChildren: RootRouteChildren = {
   PortalIndexRoute: PortalIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiPortalSplatRoute: ApiPortalSplatRoute,
+  ShareDTokenRoute: ShareDTokenRoute,
   OOrgIdTTeamIdRouteRoute: OOrgIdTTeamIdRouteRouteWithChildren,
+  ApiDashboardsAdminSplatRoute: ApiDashboardsAdminSplatRoute,
   ApiExperimentsAdminSplatRoute: ApiExperimentsAdminSplatRoute,
   ApiExperimentsV1SplatRoute: ApiExperimentsV1SplatRoute,
   ApiFlagsAdminSplatRoute: ApiFlagsAdminSplatRoute,
@@ -1105,6 +1212,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMeterAdminSplatRoute: ApiMeterAdminSplatRoute,
   ApiMeterV1SplatRoute: ApiMeterV1SplatRoute,
   ApiSegmentsAdminSplatRoute: ApiSegmentsAdminSplatRoute,
+  ApiShareDSplatRoute: ApiShareDSplatRoute,
   ApiTrailAdminSplatRoute: ApiTrailAdminSplatRoute,
   ApiTrailV1SplatRoute: ApiTrailV1SplatRoute,
   ApiWebhooksAdminSplatRoute: ApiWebhooksAdminSplatRoute,

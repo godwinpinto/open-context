@@ -194,6 +194,29 @@ mutable counter column.
   (consumer: send/endpoints CRUD/sweep; admin: endpoints, delivery log,
   rotate secret, replay).
 
+## Dashboards (module) — AI-authored chart grids
+
+- Concept: you BUILD dashboards in natural language over MCP; the UI
+  views and arranges. Panels can ONLY be created via the MCP tools
+  (`dashboards_list_sources` → `dashboards_preview_query` iterate →
+  `dashboards_save_panel`); the grid UI does drag/resize/reorder
+  (react-grid-layout v2, layout persisted per dashboard), remove
+  panel, global time-range filter, Recharts renderers
+  (line/bar/area/stat/table/pie).
+- Safety model (`packages/modules/dashboards/src/engine.ts`): panel
+  SQL is guarded raw SQL — single SELECT, 1000-row cap, and it can
+  reference ONLY allowlisted source names (`trail_events`,
+  `meter_events`, `identities`, …). Each referenced source is injected
+  as a CTE pre-filtered to `team_id` and the viewer's time range, and
+  real table names are rejected outright — tenant isolation and the
+  global date filter hold by construction, not by trusting the (LLM)
+  SQL author.
+- Shares (`dash_share`): stored token rows (NOT stateless — disable
+  from UI needs revocation) with optional expiry, both enforced per
+  request. Public surface `/share/d/{token}` + `/api/share/d/{token}`:
+  live queries, viewer controls only the time range, panel SQL never
+  reaches the browser.
+
 ## Free-tier accounting (measured)
 
 - Client assets: free, unmetered. Worker requests: SSR docs + API calls

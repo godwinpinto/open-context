@@ -59,6 +59,11 @@ export {
   expGoal,
 } from "@open-context/module-experiments/schema"
 export {
+  dashDashboard,
+  dashPanel,
+  dashShare,
+} from "@open-context/module-dashboards/schema"
+export {
   flag,
   flagEnvironment,
   flagIdentityOverride,

@@ -88,6 +88,11 @@ const navItems = [
 ] as const
 
 const moduleItems = [
+  {
+    title: "Dashboards",
+    to: "/o/$orgId/t/$teamId/dashboards",
+    icon: LayoutDashboard,
+  },
   { title: "Trail", to: "/o/$orgId/t/$teamId/trail", icon: Footprints },
   { title: "Meter", to: "/o/$orgId/t/$teamId/meter", icon: Gauge },
   {
@@ -249,6 +254,21 @@ export function AppSidebar({
           icon: Flag,
           isActive: true,
           link: <Link to="/o/$orgId/t/$teamId/flags" params={linkParams} />,
+        },
+      ],
+    }
+  } else if (pathSection === "dashboards") {
+    section = {
+      id: "dashboards",
+      title: "Dashboards",
+      items: [
+        {
+          title: "Dashboards",
+          icon: LayoutDashboard,
+          isActive: true,
+          link: (
+            <Link to="/o/$orgId/t/$teamId/dashboards" params={linkParams} />
+          ),
         },
       ],
     }
