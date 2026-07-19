@@ -44,6 +44,7 @@ import { Route as OOrgIdTTeamIdExperimentsIndexRouteImport } from './routes/o/$o
 import { Route as OOrgIdTTeamIdFlagsIndexRouteImport } from './routes/o/$orgId/t/$teamId/flags/index'
 import { Route as OOrgIdTTeamIdIdentityIndexRouteImport } from './routes/o/$orgId/t/$teamId/identity/index'
 import { Route as OOrgIdTTeamIdManageIndexRouteImport } from './routes/o/$orgId/t/$teamId/manage/index'
+import { Route as OOrgIdTTeamIdManageApiKeysRouteImport } from './routes/o/$orgId/t/$teamId/manage/api-keys'
 import { Route as OOrgIdTTeamIdManageConnectorsRouteImport } from './routes/o/$orgId/t/$teamId/manage/connectors'
 import { Route as OOrgIdTTeamIdManageMembersRouteImport } from './routes/o/$orgId/t/$teamId/manage/members'
 import { Route as OOrgIdTTeamIdManageRolesRouteImport } from './routes/o/$orgId/t/$teamId/manage/roles'
@@ -242,6 +243,12 @@ const OOrgIdTTeamIdManageIndexRoute =
     path: '/',
     getParentRoute: () => OOrgIdTTeamIdManageRouteRoute,
   } as any)
+const OOrgIdTTeamIdManageApiKeysRoute =
+  OOrgIdTTeamIdManageApiKeysRouteImport.update({
+    id: '/api-keys',
+    path: '/api-keys',
+    getParentRoute: () => OOrgIdTTeamIdManageRouteRoute,
+  } as any)
 const OOrgIdTTeamIdManageConnectorsRoute =
   OOrgIdTTeamIdManageConnectorsRouteImport.update({
     id: '/connectors',
@@ -314,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
   '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
+  '/o/$orgId/t/$teamId/manage/api-keys': typeof OOrgIdTTeamIdManageApiKeysRoute
   '/o/$orgId/t/$teamId/manage/connectors': typeof OOrgIdTTeamIdManageConnectorsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -355,6 +363,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
   '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
+  '/o/$orgId/t/$teamId/manage/api-keys': typeof OOrgIdTTeamIdManageApiKeysRoute
   '/o/$orgId/t/$teamId/manage/connectors': typeof OOrgIdTTeamIdManageConnectorsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -400,6 +409,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/account/profile': typeof OOrgIdTTeamIdAccountProfileRoute
   '/o/$orgId/t/$teamId/account/security': typeof OOrgIdTTeamIdAccountSecurityRoute
   '/o/$orgId/t/$teamId/account/sessions': typeof OOrgIdTTeamIdAccountSessionsRoute
+  '/o/$orgId/t/$teamId/manage/api-keys': typeof OOrgIdTTeamIdManageApiKeysRoute
   '/o/$orgId/t/$teamId/manage/connectors': typeof OOrgIdTTeamIdManageConnectorsRoute
   '/o/$orgId/t/$teamId/manage/members': typeof OOrgIdTTeamIdManageMembersRoute
   '/o/$orgId/t/$teamId/manage/roles': typeof OOrgIdTTeamIdManageRolesRoute
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/account/profile'
     | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
+    | '/o/$orgId/t/$teamId/manage/api-keys'
     | '/o/$orgId/t/$teamId/manage/connectors'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -487,6 +498,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/account/profile'
     | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
+    | '/o/$orgId/t/$teamId/manage/api-keys'
     | '/o/$orgId/t/$teamId/manage/connectors'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -531,6 +543,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/account/profile'
     | '/o/$orgId/t/$teamId/account/security'
     | '/o/$orgId/t/$teamId/account/sessions'
+    | '/o/$orgId/t/$teamId/manage/api-keys'
     | '/o/$orgId/t/$teamId/manage/connectors'
     | '/o/$orgId/t/$teamId/manage/members'
     | '/o/$orgId/t/$teamId/manage/roles'
@@ -817,6 +830,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdManageIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdManageRouteRoute
     }
+    '/o/$orgId/t/$teamId/manage/api-keys': {
+      id: '/o/$orgId/t/$teamId/manage/api-keys'
+      path: '/api-keys'
+      fullPath: '/o/$orgId/t/$teamId/manage/api-keys'
+      preLoaderRoute: typeof OOrgIdTTeamIdManageApiKeysRouteImport
+      parentRoute: typeof OOrgIdTTeamIdManageRouteRoute
+    }
     '/o/$orgId/t/$teamId/manage/connectors': {
       id: '/o/$orgId/t/$teamId/manage/connectors'
       path: '/connectors'
@@ -908,6 +928,7 @@ const OOrgIdTTeamIdAccountRouteRouteWithChildren =
   )
 
 interface OOrgIdTTeamIdManageRouteRouteChildren {
+  OOrgIdTTeamIdManageApiKeysRoute: typeof OOrgIdTTeamIdManageApiKeysRoute
   OOrgIdTTeamIdManageConnectorsRoute: typeof OOrgIdTTeamIdManageConnectorsRoute
   OOrgIdTTeamIdManageMembersRoute: typeof OOrgIdTTeamIdManageMembersRoute
   OOrgIdTTeamIdManageRolesRoute: typeof OOrgIdTTeamIdManageRolesRoute
@@ -917,6 +938,7 @@ interface OOrgIdTTeamIdManageRouteRouteChildren {
 
 const OOrgIdTTeamIdManageRouteRouteChildren: OOrgIdTTeamIdManageRouteRouteChildren =
   {
+    OOrgIdTTeamIdManageApiKeysRoute: OOrgIdTTeamIdManageApiKeysRoute,
     OOrgIdTTeamIdManageConnectorsRoute: OOrgIdTTeamIdManageConnectorsRoute,
     OOrgIdTTeamIdManageMembersRoute: OOrgIdTTeamIdManageMembersRoute,
     OOrgIdTTeamIdManageRolesRoute: OOrgIdTTeamIdManageRolesRoute,

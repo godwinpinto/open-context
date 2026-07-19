@@ -9,6 +9,7 @@ const TABS = [
   { value: "teams", label: "Teams" },
   { value: "roles", label: "Roles" },
   { value: "connectors", label: "Connectors" },
+  { value: "api-keys", label: "API keys" },
 ] as const
 
 export const Route = createFileRoute("/o/$orgId/t/$teamId/manage")({
