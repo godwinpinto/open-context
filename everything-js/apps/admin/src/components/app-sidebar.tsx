@@ -1,6 +1,7 @@
 import { useState } from "react"
 import {
   ChevronsUpDown,
+  Filter,
   Fingerprint,
   Footprints,
   Gauge,
@@ -59,6 +60,12 @@ const navItems = [
     title: "Identity",
     to: "/o/$orgId/t/$teamId/identity",
     icon: Fingerprint,
+    exact: false,
+  },
+  {
+    title: "Segmentation",
+    to: "/o/$orgId/t/$teamId/segments",
+    icon: Filter,
     exact: false,
   },
   {

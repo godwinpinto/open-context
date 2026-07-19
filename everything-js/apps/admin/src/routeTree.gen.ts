@@ -23,6 +23,7 @@ import { Route as ApiIdentityAdminSplatRouteImport } from './routes/api/identity
 import { Route as ApiIdentityV1SplatRouteImport } from './routes/api/identity/v1/$'
 import { Route as ApiMeterAdminSplatRouteImport } from './routes/api/meter/admin/$'
 import { Route as ApiMeterV1SplatRouteImport } from './routes/api/meter/v1/$'
+import { Route as ApiSegmentsAdminSplatRouteImport } from './routes/api/segments/admin/$'
 import { Route as ApiTrailAdminSplatRouteImport } from './routes/api/trail/admin/$'
 import { Route as ApiTrailV1SplatRouteImport } from './routes/api/trail/v1/$'
 import { Route as OOrgIdTTeamIdRouteRouteImport } from './routes/o/$orgId/t/$teamId/route'
@@ -41,6 +42,7 @@ import { Route as OOrgIdTTeamIdManageMembersRouteImport } from './routes/o/$orgI
 import { Route as OOrgIdTTeamIdManageRolesRouteImport } from './routes/o/$orgId/t/$teamId/manage/roles'
 import { Route as OOrgIdTTeamIdManageTeamsRouteImport } from './routes/o/$orgId/t/$teamId/manage/teams'
 import { Route as OOrgIdTTeamIdMeterIndexRouteImport } from './routes/o/$orgId/t/$teamId/meter/index'
+import { Route as OOrgIdTTeamIdSegmentsIndexRouteImport } from './routes/o/$orgId/t/$teamId/segments/index'
 import { Route as OOrgIdTTeamIdTrailIndexRouteImport } from './routes/o/$orgId/t/$teamId/trail/index'
 
 const IndexRoute = IndexRouteImport.update({
@@ -114,6 +116,11 @@ const ApiMeterAdminSplatRoute = ApiMeterAdminSplatRouteImport.update({
 const ApiMeterV1SplatRoute = ApiMeterV1SplatRouteImport.update({
   id: '/api/meter/v1/$',
   path: '/api/meter/v1/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSegmentsAdminSplatRoute = ApiSegmentsAdminSplatRouteImport.update({
+  id: '/api/segments/admin/$',
+  path: '/api/segments/admin/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTrailAdminSplatRoute = ApiTrailAdminSplatRouteImport.update({
@@ -219,6 +226,12 @@ const OOrgIdTTeamIdMeterIndexRoute = OOrgIdTTeamIdMeterIndexRouteImport.update({
   path: '/meter/',
   getParentRoute: () => OOrgIdTTeamIdRouteRoute,
 } as any)
+const OOrgIdTTeamIdSegmentsIndexRoute =
+  OOrgIdTTeamIdSegmentsIndexRouteImport.update({
+    id: '/segments/',
+    path: '/segments/',
+    getParentRoute: () => OOrgIdTTeamIdRouteRoute,
+  } as any)
 const OOrgIdTTeamIdTrailIndexRoute = OOrgIdTTeamIdTrailIndexRouteImport.update({
   id: '/trail/',
   path: '/trail/',
@@ -241,6 +254,7 @@ export interface FileRoutesByFullPath {
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
+  '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
@@ -258,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
+  '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
 }
 export interface FileRoutesByTo {
@@ -275,6 +290,7 @@ export interface FileRoutesByTo {
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
+  '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/o/$orgId/t/$teamId': typeof OOrgIdTTeamIdIndexRoute
@@ -290,6 +306,7 @@ export interface FileRoutesByTo {
   '/o/$orgId/t/$teamId/identity': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter': typeof OOrgIdTTeamIdMeterIndexRoute
+  '/o/$orgId/t/$teamId/segments': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail': typeof OOrgIdTTeamIdTrailIndexRoute
 }
 export interface FileRoutesById {
@@ -309,6 +326,7 @@ export interface FileRoutesById {
   '/api/identity/v1/$': typeof ApiIdentityV1SplatRoute
   '/api/meter/admin/$': typeof ApiMeterAdminSplatRoute
   '/api/meter/v1/$': typeof ApiMeterV1SplatRoute
+  '/api/segments/admin/$': typeof ApiSegmentsAdminSplatRoute
   '/api/trail/admin/$': typeof ApiTrailAdminSplatRoute
   '/api/trail/v1/$': typeof ApiTrailV1SplatRoute
   '/o/$orgId/t/$teamId/account': typeof OOrgIdTTeamIdAccountRouteRouteWithChildren
@@ -326,6 +344,7 @@ export interface FileRoutesById {
   '/o/$orgId/t/$teamId/identity/': typeof OOrgIdTTeamIdIdentityIndexRoute
   '/o/$orgId/t/$teamId/manage/': typeof OOrgIdTTeamIdManageIndexRoute
   '/o/$orgId/t/$teamId/meter/': typeof OOrgIdTTeamIdMeterIndexRoute
+  '/o/$orgId/t/$teamId/segments/': typeof OOrgIdTTeamIdSegmentsIndexRoute
   '/o/$orgId/t/$teamId/trail/': typeof OOrgIdTTeamIdTrailIndexRoute
 }
 export interface FileRouteTypes {
@@ -346,6 +365,7 @@ export interface FileRouteTypes {
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
+    | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/o/$orgId/t/$teamId/account'
@@ -363,6 +383,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/identity/'
     | '/o/$orgId/t/$teamId/manage/'
     | '/o/$orgId/t/$teamId/meter/'
+    | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -380,6 +401,7 @@ export interface FileRouteTypes {
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
+    | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/o/$orgId/t/$teamId'
@@ -395,6 +417,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/identity'
     | '/o/$orgId/t/$teamId/manage'
     | '/o/$orgId/t/$teamId/meter'
+    | '/o/$orgId/t/$teamId/segments'
     | '/o/$orgId/t/$teamId/trail'
   id:
     | '__root__'
@@ -413,6 +436,7 @@ export interface FileRouteTypes {
     | '/api/identity/v1/$'
     | '/api/meter/admin/$'
     | '/api/meter/v1/$'
+    | '/api/segments/admin/$'
     | '/api/trail/admin/$'
     | '/api/trail/v1/$'
     | '/o/$orgId/t/$teamId/account'
@@ -430,6 +454,7 @@ export interface FileRouteTypes {
     | '/o/$orgId/t/$teamId/identity/'
     | '/o/$orgId/t/$teamId/manage/'
     | '/o/$orgId/t/$teamId/meter/'
+    | '/o/$orgId/t/$teamId/segments/'
     | '/o/$orgId/t/$teamId/trail/'
   fileRoutesById: FileRoutesById
 }
@@ -448,6 +473,7 @@ export interface RootRouteChildren {
   ApiIdentityV1SplatRoute: typeof ApiIdentityV1SplatRoute
   ApiMeterAdminSplatRoute: typeof ApiMeterAdminSplatRoute
   ApiMeterV1SplatRoute: typeof ApiMeterV1SplatRoute
+  ApiSegmentsAdminSplatRoute: typeof ApiSegmentsAdminSplatRoute
   ApiTrailAdminSplatRoute: typeof ApiTrailAdminSplatRoute
   ApiTrailV1SplatRoute: typeof ApiTrailV1SplatRoute
 }
@@ -550,6 +576,13 @@ declare module '@tanstack/react-router' {
       path: '/api/meter/v1/$'
       fullPath: '/api/meter/v1/$'
       preLoaderRoute: typeof ApiMeterV1SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/segments/admin/$': {
+      id: '/api/segments/admin/$'
+      path: '/api/segments/admin/$'
+      fullPath: '/api/segments/admin/$'
+      preLoaderRoute: typeof ApiSegmentsAdminSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/trail/admin/$': {
@@ -678,6 +711,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OOrgIdTTeamIdMeterIndexRouteImport
       parentRoute: typeof OOrgIdTTeamIdRouteRoute
     }
+    '/o/$orgId/t/$teamId/segments/': {
+      id: '/o/$orgId/t/$teamId/segments/'
+      path: '/segments'
+      fullPath: '/o/$orgId/t/$teamId/segments/'
+      preLoaderRoute: typeof OOrgIdTTeamIdSegmentsIndexRouteImport
+      parentRoute: typeof OOrgIdTTeamIdRouteRoute
+    }
     '/o/$orgId/t/$teamId/trail/': {
       id: '/o/$orgId/t/$teamId/trail/'
       path: '/trail'
@@ -754,6 +794,7 @@ interface OOrgIdTTeamIdRouteRouteChildren {
   OOrgIdTTeamIdIndexRoute: typeof OOrgIdTTeamIdIndexRoute
   OOrgIdTTeamIdIdentityIndexRoute: typeof OOrgIdTTeamIdIdentityIndexRoute
   OOrgIdTTeamIdMeterIndexRoute: typeof OOrgIdTTeamIdMeterIndexRoute
+  OOrgIdTTeamIdSegmentsIndexRoute: typeof OOrgIdTTeamIdSegmentsIndexRoute
   OOrgIdTTeamIdTrailIndexRoute: typeof OOrgIdTTeamIdTrailIndexRoute
 }
 
@@ -763,6 +804,7 @@ const OOrgIdTTeamIdRouteRouteChildren: OOrgIdTTeamIdRouteRouteChildren = {
   OOrgIdTTeamIdIndexRoute: OOrgIdTTeamIdIndexRoute,
   OOrgIdTTeamIdIdentityIndexRoute: OOrgIdTTeamIdIdentityIndexRoute,
   OOrgIdTTeamIdMeterIndexRoute: OOrgIdTTeamIdMeterIndexRoute,
+  OOrgIdTTeamIdSegmentsIndexRoute: OOrgIdTTeamIdSegmentsIndexRoute,
   OOrgIdTTeamIdTrailIndexRoute: OOrgIdTTeamIdTrailIndexRoute,
 }
 
@@ -785,6 +827,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiIdentityV1SplatRoute: ApiIdentityV1SplatRoute,
   ApiMeterAdminSplatRoute: ApiMeterAdminSplatRoute,
   ApiMeterV1SplatRoute: ApiMeterV1SplatRoute,
+  ApiSegmentsAdminSplatRoute: ApiSegmentsAdminSplatRoute,
   ApiTrailAdminSplatRoute: ApiTrailAdminSplatRoute,
   ApiTrailV1SplatRoute: ApiTrailV1SplatRoute,
 }

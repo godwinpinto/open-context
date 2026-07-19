@@ -3,6 +3,7 @@ import { OpenAPIHandler } from "@orpc/openapi/fetch"
 import {
   identityAdminRouter,
   identityConsumerRouter,
+  segmentsAdminRouter,
   type IdentityAdminContext,
   type IdentityConsumerContext,
 } from "@open-context/core"
@@ -22,6 +23,21 @@ export async function handleIdentityAdmin(request: Request, env: Env) {
   const context: IdentityAdminContext = ctx
   const { matched, response } = await adminHandler.handle(request, {
     prefix: "/api/identity/admin",
+    context,
+  })
+  if (matched) return response
+  return Response.json({ error: "Not found" }, { status: 404 })
+}
+
+const segmentsHandler = new RPCHandler(segmentsAdminRouter)
+
+export async function handleSegmentsAdmin(request: Request, env: Env) {
+  const ctx = await adminCallContext(request, env)
+  if (ctx instanceof Response) return ctx
+
+  const context: IdentityAdminContext = ctx
+  const { matched, response } = await segmentsHandler.handle(request, {
+    prefix: "/api/segments/admin",
     context,
   })
   if (matched) return response

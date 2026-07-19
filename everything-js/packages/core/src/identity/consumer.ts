@@ -2,6 +2,7 @@ import { os } from "@orpc/server"
 import { z } from "zod"
 
 import type { IdentityConsumerContext } from "./context"
+import { identityInSegments } from "../segments/store"
 import {
   attachIdentityToGroup,
   getMergedProperties,
@@ -70,13 +71,18 @@ const attach = base
   )
 
 // GET /api/identity/v1/identities/{key} — merged view (group props
-// under identity props); what flags evaluation will consume.
+// under identity props) plus segment memberships; one call gives an
+// SDK everything flags/entitlement targeting needs.
 const resolve = base
   .route({ method: "GET", path: "/identities/{key}" })
   .input(z.object({ key: keySchema }))
-  .handler(({ input, context }) =>
-    getMergedProperties(context.db, context.teamId, input.key),
-  )
+  .handler(async ({ input, context }) => {
+    const [merged, segments] = await Promise.all([
+      getMergedProperties(context.db, context.teamId, input.key),
+      identityInSegments(context.db, context.teamId, input.key),
+    ])
+    return { ...merged, segments }
+  })
 
 export const identityConsumerRouter = {
   identify,

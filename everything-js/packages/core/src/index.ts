@@ -25,6 +25,24 @@ export {
 } from "./identity/store"
 export { identityConsumerRouter } from "./identity/consumer"
 export { identityAdminRouter } from "./identity/admin"
+
+// Segments — named predicates over identities; the shared filter
+// primitive for all modules.
+export { coreSegment, coreSegmentIdentity } from "./segments/schema"
+export {
+  evaluateRules,
+  explainRules,
+  splitBucket,
+  type SegmentCondition,
+  type SegmentOperator,
+  type SegmentRules,
+} from "./segments/rules"
+export {
+  SEGMENT_NAMESPACE,
+  identityInSegments,
+  segmentId,
+} from "./segments/store"
+export { segmentsAdminRouter } from "./segments/admin"
 export type {
   CoreDatabase,
   IdentityAdminContext,

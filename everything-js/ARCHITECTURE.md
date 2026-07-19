@@ -44,6 +44,34 @@ first core concern is IDENTITY — who usage is about:
   convention or by deriving the uuid, no FKs, and modules may import
   `getMergedProperties` etc. from @open-context/core directly.
 
+### Segments (core concern #2)
+
+Named predicates over identities — the shared filter primitive every
+module consumes (flags targeting, metered grants, event filtering).
+Tables `oc_segment` + `oc_segment_identity`; two types:
+
+- **dynamic** — rules over MERGED properties (traits only; behavioral
+  conditions are a future concern via module-registered condition
+  resolvers — the `type` discriminator in rule JSON leaves room).
+  Flat `{match: all|any, conditions[]}` with Flagsmith-compatible
+  operators plus a `split` condition for percentage rollouts.
+- **manual** — explicit membership; members addable by identity key
+  OR uuid (interchangeable via deterministic IDs; unknown keys are
+  upserted).
+
+**FROZEN CONTRACT**: split bucketing is FNV-1a 32-bit over
+`segmentId:identityKey` mod 100 (segments/rules.ts). Changing it
+reshuffles every live rollout — never touch; a new algorithm is a new
+condition type.
+
+Evaluation is dynamic (no materialization): per-identity checks are
+one merged-props fetch + in-memory rule eval
+(`identityInSegments`); admin membership listing is scan+evaluate
+(fine to ~tens of thousands of identities; materialized membership is
+a ClickHouse-era optimization). The consumer resolve endpoint
+(`GET /api/identity/v1/identities/{key}`) returns `segments: []`
+alongside merged properties — one call powers SDK-side gating.
+
 ## The module pattern
 
 Each module under `packages/modules/*` exports:

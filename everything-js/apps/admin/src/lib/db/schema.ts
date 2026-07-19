@@ -33,6 +33,10 @@ export {
   coreIdentity,
   coreIdentityGroup,
 } from "@open-context/core/schema"
+export {
+  coreSegment,
+  coreSegmentIdentity,
+} from "@open-context/core"
 
 // Module schema fragments — re-exported so drizzle-kit migrations and
 // the drizzle client cover module tables too.
